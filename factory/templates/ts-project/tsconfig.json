@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "declarationMap": true,
     "experimentalDecorators": false,
     "esModuleInterop": true,
@@ -25,9 +25,10 @@
     "strictPropertyInitialization": true,
     "stripInternal": true,
     "allowJs": true,
+    "jsx": "react",
     "target": "ES2019",
     "module": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ScriptHost", "ES2019"],
-    "types": ["node", "jest"]
+    "types": ["node"]
   }
 }
