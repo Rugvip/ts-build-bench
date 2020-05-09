@@ -2,8 +2,14 @@ const fs = require('fs-extra');
 const { resolve: resolvePath } = require('path');
 const Templater = require('./Templater');
 
-module.exports = async function createProject(config) {
-  const dir = resolvePath(config.path);
+module.exports = async function createProject({
+  path: projectPath,
+  main,
+  types,
+  componentExports,
+  packages,
+}) {
+  const dir = resolvePath(projectPath);
   await fs.remove(dir);
   await fs.ensureDir(dir);
 
@@ -14,8 +20,8 @@ module.exports = async function createProject(config) {
 
   await tr.hydrate({ name: 'ts-project', path: '.', data: {} });
 
-  for (const [pkgIndex, package] of config.packages.entries()) {
-    const { main, types, libs, components, componentExports } = package;
+  for (const [pkgIndex, package] of packages.entries()) {
+    const { libs, components } = package;
     const name = `pkg${pkgIndex + 1}`;
     await tr.hydrate({
       name: 'ts-package',
