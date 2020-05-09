@@ -1,10 +1,14 @@
-const { resolve: resolvePath, relative: relativePath } = require('path');
+const {
+  resolve: resolvePath,
+  relative: relativePath,
+  basename,
+} = require('path');
 const childProcess = require('child_process');
 const { promisify } = require('util');
 
 const execFile = promisify(childProcess.execFile);
 
-exports.ProjectRunner = class ProjectRunner {
+class ProjectRunner {
   constructor(project) {
     this.rootDir = project.dir;
   }
@@ -38,5 +42,35 @@ exports.ProjectRunner = class ProjectRunner {
 
   async prepare() {
     await this.runCmd('.', ['yarn', 'install']);
+  }
+}
+
+exports.ProjectRunner = ProjectRunner;
+
+exports.MatrixRunner = class MatrixRunner {
+  constructor(projects) {
+    this.runners = projects.map((project) => new ProjectRunner(project));
+    this.dirs = projects.map((project) => basename(project.dir));
+  }
+
+  async prepare() {
+    await Promise.all(this.runners.map((r) => r.prepare()));
+  }
+
+  async runCmd(target, cmd) {
+    await Promise.all(this.runners.map((r) => r.runCmd(target, cmd)));
+  }
+
+  async timeCmd(target, cmd) {
+    const times = {};
+
+    for (const [index, r] of this.runners.entries()) {
+      const dir = this.dirs[index];
+      const time = await r.timeCmd(target, cmd);
+      console.log(`Ran ${target} -> '${cmd.join(' ')}' in ${dir} in ${time}ms`);
+      times[dir] = time;
+    }
+
+    return times;
   }
 };
