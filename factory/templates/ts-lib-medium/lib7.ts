@@ -4,14 +4,14 @@ export const export7func = () => {
   return '';
 };
 export const export7class = class SomeClass {
-  private readonly member1 = '1';
-  private readonly member2 = '2';
-  private readonly member3 = '3';
-  private readonly member4 = '4';
-  private readonly member5 = '5';
-  private readonly member6 = '6';
-  private readonly member7 = '7';
-  private readonly member8 = '8';
+  readonly member1 = '1';
+  readonly member2 = '2';
+  readonly member3 = '3';
+  readonly member4 = '4';
+  readonly member5 = '5';
+  readonly member6 = '6';
+  readonly member7 = '7';
+  readonly member8 = '8';
 
   method1() {
     return '1';
