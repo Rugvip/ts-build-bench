@@ -8,7 +8,7 @@ class Templater {
     this.targetDir = target;
   }
 
-  async hydrate({ name, path, data }) {
+  async hydrate({ name, path, data = {} }) {
     const templatePath = resolvePath(this.templateDir, name);
     const targetPath = resolvePath(this.targetDir, path);
 
@@ -28,12 +28,16 @@ class Templater {
         targetPath,
         relativePath(templatePath, path).replace(/\.hbs$/, '')
       );
-      console.log('DEBUG: outPath =', outPath);
 
       const contents = await fs.readFile(path, 'utf8');
       const result = handlebars.compile(contents)(data);
       await fs.writeFile(outPath, result);
     }
+  }
+
+  async addLine(path, line) {
+    const filePath = resolvePath(this.targetDir, path);
+    await fs.appendFile(filePath, `\n${line}\n`, 'utf8');
   }
 }
 
@@ -55,6 +59,32 @@ async function createProject(config) {
       path: `packages/${name}`,
       data: { name, main, types },
     });
+
+    for (const [index, lib] of libs.entries()) {
+      const n = index + 1;
+      await tr.hydrate({
+        name: `ts-lib-${lib}`,
+        path: `packages/${name}/src/lib/lib-${n}`,
+      });
+
+      await tr.addLine(
+        `packages/${name}/src/lib/index.ts`,
+        `export * as lib${n} from './lib-${n}'`
+      );
+    }
+
+    for (const [index, component] of components.entries()) {
+      const n = index + 1;
+      await tr.hydrate({
+        name: `ts-component-${component}`,
+        path: `packages/${name}/src/components/component-${n}`,
+      });
+
+      await tr.addLine(
+        `packages/${name}/src/components/index.ts`,
+        `export * as component${n} from './component-${n}'`
+      );
+    }
   }
 }
 
