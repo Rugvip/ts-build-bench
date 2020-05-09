@@ -64,7 +64,7 @@ async function createProject(config) {
   await tr.hydrate({ name: 'ts-project', path: '.', data: {} });
 
   for (const package of config.packages) {
-    const { name, main, types, libs, components } = package;
+    const { name, main, types, libs, components, componentExports } = package;
     await tr.hydrate({
       name: 'ts-package',
       path: `packages/${name}`,
@@ -80,7 +80,7 @@ async function createProject(config) {
 
       await tr.addLine(
         `packages/${name}/src/lib/index.ts`,
-        `export * as lib${n} from './lib-${n}'`
+        `export * as lib${n} from './lib-${n}';`
       );
     }
 
@@ -89,19 +89,23 @@ async function createProject(config) {
       await tr.hydrate({
         name: `ts-component-${component}`,
         path: `packages/${name}/src/components/component-${n}`,
+        data: {
+          export: componentExports === 'default' ? 'default' : `Component${n}`,
+        },
       });
 
-      await tr.addLine(
-        `packages/${name}/src/components/index.ts`,
-        `export * as component${n} from './component-${n}'`
-      );
+      const exportLine =
+        componentExports === 'default'
+          ? `export { default as Component${n} } from './component-${n}';`
+          : `export * from './component-${n}';`;
+      await tr.addLine(`packages/${name}/src/components/index.ts`, exportLine);
     }
 
     // Add to main package
     if (libs.length) {
       await tr.addLine(
         `packages/main/src/libs.ts`,
-        `export * as ${camelCase(`libs-${name}`)} from '@internal/${name}'`
+        `export * as ${camelCase(`libs-${name}`)} from '@internal/${name}';`
       );
     }
     if (components.length) {
@@ -109,7 +113,7 @@ async function createProject(config) {
         `packages/main/src/components.ts`,
         `export * as ${camelCase(
           `components-${name}`
-        )} from '@internal/${name}'`
+        )} from '@internal/${name}';`
       );
     }
     tr.addDep('packages/main/package.json', `@internal/${name}`, '0.0.0');
@@ -125,6 +129,7 @@ createProject({
       types: 'dist/index.d.ts',
       libs: ['medium'],
       components: ['small', 'specific-imports', 'medium'],
+      componentExports: 'default', // or named
     },
   ],
 }).then(() => {
