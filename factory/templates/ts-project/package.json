@@ -5,7 +5,7 @@
   "scripts": {
     "main:build": "yarn workspace main build",
     "main:typecheck": "yarn workspace main typecheck",
-    "build:tsc": "lerna run build:tsc"
+    "build": "lerna run build:tsc"
   },
   "workspaces": {
     "packages": [

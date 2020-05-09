@@ -37,6 +37,20 @@ module.exports = async function createProject(config) {
         `packages/${name}/src/lib/index.ts`,
         `export * as lib${n} from './lib-${n}';`
       );
+
+      // Add to main package
+      await tr.addLine(
+        `packages/main/src/index.ts`,
+        Array(8)
+          .fill()
+          .map(
+            (_, callIndex) =>
+              `deps.${camelCase(name)}.lib${n}.export${
+                callIndex + 1
+              }bigClass.forLocalStorage('bucket').getItem('key')`
+          )
+          .join('\n')
+      );
     }
 
     for (const [index, component] of components.entries()) {
@@ -54,23 +68,19 @@ module.exports = async function createProject(config) {
           ? `export { default as Component${n} } from './component-${n}';`
           : `export * from './component-${n}';`;
       await tr.addLine(`packages/${name}/src/components/index.ts`, exportLine);
+
+      // Add to main package
+      await tr.addLine(
+        `packages/main/src/index.ts`,
+        `deps.${camelCase(name)}.Component${n}({})`
+      );
     }
 
     // Add to main package
-    if (libs.length) {
-      await tr.addLine(
-        `packages/main/src/libs.ts`,
-        `export * as ${camelCase(`libs-${name}`)} from '@internal/${name}';`
-      );
-    }
-    if (components.length) {
-      await tr.addLine(
-        `packages/main/src/components.ts`,
-        `export * as ${camelCase(
-          `components-${name}`
-        )} from '@internal/${name}';`
-      );
-    }
+    await tr.addLine(
+      `packages/main/src/deps.ts`,
+      `export * as ${camelCase(name)} from '@internal/${name}';`
+    );
     tr.addDep('packages/main/package.json', `@internal/${name}`, '0.0.0');
   }
 
