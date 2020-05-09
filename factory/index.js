@@ -39,6 +39,17 @@ class Templater {
     const filePath = resolvePath(this.targetDir, path);
     await fs.appendFile(filePath, `\n${line}\n`, 'utf8');
   }
+
+  async addDep(path, name, version) {
+    const filePath = resolvePath(this.targetDir, path);
+    const pkg = await fs.readJson(filePath);
+    pkg.dependencies[name] = version;
+    await fs.writeJson(filePath, pkg, { spaces: 2 });
+  }
+}
+
+function camelCase(str) {
+  return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 }
 
 async function createProject(config) {
@@ -57,7 +68,7 @@ async function createProject(config) {
     await tr.hydrate({
       name: 'ts-package',
       path: `packages/${name}`,
-      data: { name, main, types },
+      data: { name: `@internal/${name}`, main, types },
     });
 
     for (const [index, lib] of libs.entries()) {
@@ -85,6 +96,23 @@ async function createProject(config) {
         `export * as component${n} from './component-${n}'`
       );
     }
+
+    // Add to main package
+    if (libs.length) {
+      await tr.addLine(
+        `packages/main/src/libs.ts`,
+        `export * as ${camelCase(`libs-${name}`)} from '@internal/${name}'`
+      );
+    }
+    if (components.length) {
+      await tr.addLine(
+        `packages/main/src/components.ts`,
+        `export * as ${camelCase(
+          `components-${name}`
+        )} from '@internal/${name}'`
+      );
+    }
+    tr.addDep('packages/main/package.json', `@internal/${name}`, '0.0.0');
   }
 }
 
