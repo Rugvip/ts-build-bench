@@ -1,4 +1,16 @@
 const { createProject } = require('./factory');
+const { ProjectRunner } = require('./runner');
+
+const presets = {
+  components: {
+    balanced: (n) => [...Array(n).fill('small'), ...Array(n).fill('medium')],
+    normalImports: (n) => Array(n).fill('medium'),
+    specificImports: (n) => Array(n).fill('specific-imports'),
+  },
+  libs: {
+    balanced: (n) => Array(n).fill('medium'),
+  },
+};
 
 async function main() {
   const project = await createProject({
@@ -8,13 +20,17 @@ async function main() {
         name: 'a',
         main: 'dist/index.js',
         types: 'dist/index.d.ts',
-        libs: ['medium'],
-        components: ['small', 'specific-imports', 'medium'],
+        libs: presets.libs.balanced(3),
+        components: presets.components.balanced(3),
         componentExports: 'default', // or named
       },
     ],
   });
-  console.log('DEBUG: project =', project);
+
+  const r = new ProjectRunner(project);
+  await r.prepare();
+  const buildTime = await r.timeCmd('.', ['yarn', 'build']);
+  console.log('DEBUG: buildTime =', buildTime);
 }
 
 main().catch((error) => {
