@@ -17,7 +17,6 @@ async function main() {
     path: 'workdir/bench-1',
     packages: [
       {
-        name: 'a',
         main: 'dist/index.js',
         types: 'dist/index.d.ts',
         libs: presets.libs.balanced(3),

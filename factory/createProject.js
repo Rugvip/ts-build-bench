@@ -2,10 +2,6 @@ const fs = require('fs-extra');
 const { resolve: resolvePath } = require('path');
 const Templater = require('./Templater');
 
-function camelCase(str) {
-  return str.replace(/-(.)/g, (_, c) => c.toUpperCase());
-}
-
 module.exports = async function createProject(config) {
   const dir = resolvePath(config.path);
   await fs.remove(dir);
@@ -18,8 +14,9 @@ module.exports = async function createProject(config) {
 
   await tr.hydrate({ name: 'ts-project', path: '.', data: {} });
 
-  for (const package of config.packages) {
-    const { name, main, types, libs, components, componentExports } = package;
+  for (const [pkgIndex, package] of config.packages.entries()) {
+    const { main, types, libs, components, componentExports } = package;
+    const name = `pkg${pkgIndex + 1}`;
     await tr.hydrate({
       name: 'ts-package',
       path: `packages/${name}`,
@@ -45,7 +42,7 @@ module.exports = async function createProject(config) {
           .fill()
           .map(
             (_, callIndex) =>
-              `deps.${camelCase(name)}.lib${n}.export${
+              `deps.${name}.lib${n}.export${
                 callIndex + 1
               }bigClass.forLocalStorage('bucket').getItem('key')`
           )
@@ -72,14 +69,14 @@ module.exports = async function createProject(config) {
       // Add to main package
       await tr.addLine(
         `packages/main/src/index.ts`,
-        `deps.${camelCase(name)}.Component${n}({})`
+        `deps.${name}.Component${n}({})`
       );
     }
 
     // Add to main package
     await tr.addLine(
       `packages/main/src/deps.ts`,
-      `export * as ${camelCase(name)} from '@internal/${name}';`
+      `export * as ${name} from '@internal/${name}';`
     );
     tr.addDep('packages/main/package.json', `@internal/${name}`, '0.0.0');
   }
