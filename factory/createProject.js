@@ -3,7 +3,7 @@ const { resolve: resolvePath } = require('path');
 const Templater = require('./Templater');
 
 function camelCase(str) {
-  return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  return str.replace(/-(.)/g, (_, c) => c.toUpperCase());
 }
 
 module.exports = async function createProject(config) {
