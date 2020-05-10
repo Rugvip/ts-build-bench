@@ -34,7 +34,7 @@ class ProjectRunner {
     }
   }
 
-  async timeCmd({ path, cmd, count = 1 }) {
+  async timeCmd({ path = '.', cmd, count = 1 }) {
     const timings = [];
     for (let i = 0; i < count; i++) {
       const start = Date.now();
