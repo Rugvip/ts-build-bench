@@ -3,9 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "main:build:tsc": "yarn workspace main build:tsc",
     "main:lint": "yarn workspace main lint",
-    "build:tsc": "lerna run build:tsc",
+    "build": "lerna run build:tsc",
     "lint": "lerna run lint"
   },
   "workspaces": {
