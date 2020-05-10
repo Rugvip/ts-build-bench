@@ -49,9 +49,7 @@ class ProjectRunner {
   }
 }
 
-exports.ProjectRunner = ProjectRunner;
-
-exports.MatrixRunner = class MatrixRunner {
+class MatrixRunner {
   constructor({ projects }) {
     this.runners = projects.map((project) => new ProjectRunner(project));
     this.dirs = projects.map((project) => basename(project.dir));
@@ -79,7 +77,7 @@ exports.MatrixRunner = class MatrixRunner {
 
     return times;
   }
-};
+}
 
 function timingsSummary(timings) {
   const sum = (ns) => ns.reduce((sum, n) => sum + n, 0);
@@ -90,3 +88,29 @@ function timingsSummary(timings) {
   );
   return `avg=${avg.toFixed(0)}ms stdev=${stdev.toFixed(0)}`;
 }
+
+async function processRunner({ matrix, prepare, benchmark }) {
+  try {
+    const runPrepare = process.argv.includes('prepare');
+    const runBenchmark = process.argv.includes('benchmark');
+    const count = process.argv.find((arg) => arg.match(/^[0-9]+$/)) || 1;
+
+    const r = new MatrixRunner(matrix);
+
+    if (runPrepare) {
+      await prepare(r);
+    } else if (runBenchmark) {
+      await benchmark(r, count);
+    } else {
+      await prepare(r);
+      await benchmark(r, count);
+    }
+  } catch (error) {
+    console.error(error.stack || error);
+    process.exit(1);
+  }
+}
+
+exports.ProjectRunner = ProjectRunner;
+exports.MatrixRunner = MatrixRunner;
+exports.processRunner = processRunner;

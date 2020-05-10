@@ -1,35 +1,29 @@
 const { createProjectMatrix, presets } = require('./factory');
-const { MatrixRunner } = require('./runner');
+const { processRunner } = require('./runner');
 const { printTimingSummary } = require('./stats');
 
-async function main() {
-  const matrix = createProjectMatrix({
+processRunner({
+  matrix: createProjectMatrix({
     baseConfig: presets.baseConfig(),
     dimensions: [
       presets.dimensions.muiImportMethod(),
       presets.dimensions.typesEntrypoint(),
       presets.dimensions.componentExports(),
     ],
-  });
+  }),
+  prepare: async (runner) => {
+    await runner.prepare();
 
-  await matrix.inflate();
-
-  const r = new MatrixRunner(matrix);
-  await r.prepare();
-
-  const buildTimings = await r.timeCmd({ cmd: ['yarn', 'build'] });
-  console.log('*** BUILD TIMES ***');
-  printTimingSummary(buildTimings);
-
-  const checkTimings = await r.timeCmd({
-    cmd: ['yarn', 'main:typecheck'],
-    count: 10,
-  });
-  console.log('*** CHECK TIMES ***');
-  printTimingSummary(checkTimings);
-}
-
-main().catch((error) => {
-  console.error(error.stack || error);
-  process.exit(1);
+    const buildTimings = await runner.timeCmd({ cmd: ['yarn', 'build'] });
+    console.log('*** BUILD TIMES ***');
+    printTimingSummary(buildTimings);
+  },
+  benchmark: async (runner, count) => {
+    const checkTimings = await runner.timeCmd({
+      cmd: ['yarn', 'main:typecheck'],
+      count,
+    });
+    console.log('*** CHECK TIMES ***');
+    printTimingSummary(checkTimings);
+  },
 });
