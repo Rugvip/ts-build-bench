@@ -70,9 +70,10 @@ const presets = {
       rootRefs: {
         projectReferences: 'root',
       },
-      mainRefs: {
-        projectReferences: 'main',
-      },
+      // keeping project references in main pkg vs root doesn't seem to make a difference
+      // mainRefs: {
+      //   projectReferences: 'main',
+      // },
       noRefs: {
         projectReferences: false,
       },
