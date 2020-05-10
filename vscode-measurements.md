@@ -1,5 +1,7 @@
 # VSCode measurements
 
+## Test 1
+
 Config:
 
 ```js
@@ -14,7 +16,7 @@ createProjectMatrix({
 }),
 ```
 
-## Update speed
+### Update speed
 
 Removal of type from package, in the location that the type is read from (dist/src).
 Time measured is time to red squiggly in main pkg.
@@ -26,7 +28,7 @@ bench-typesSrc-rootRefs = -
 
 No noticable differences, all < 1s
 
-## Restart Server
+### Restart Server
 
 Cause error in a dependency to show red squiggly in main package. Restart TS server and measure time until red squiggly reappears.
 
@@ -37,7 +39,7 @@ bench-typesSrc-rootRefs = 9.44s 7.48
 
 Pointing to src may be a little bit slower, using type references doesn't seem to have an impact at all.
 
-## Benchmark results:
+### Benchmark results:
 
 Build, n = 1
 
@@ -79,8 +81,57 @@ Dimension 1
     [typesSrc] avg=15194 stdev=731 diff=3.641
 ```
 
-## Conclusion
+### Conclusion
 
 Neither project references nor consuming types from .d.ts files seems to have any significant speedup in a large VSCode monorepo project.
 
 Linting seems significantly slower. Measurements in different project sizes have shown ~2x speedup for pointing to .d.ts files in dist, and ~2.5x speedup for using project references.
+
+## Test 2
+
+Trying a much larger project, just in VSCode
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig({
+    packages: Array(100).fill(presets.packages.balanced(20)),
+    types: 'src/index.ts',
+  }),
+  dimensions: [
+    {
+      monoRepoSrc: {
+        singlePackage: false,
+      },
+      monoRepoDist: {
+        types: 'dist/index.d.ts',
+        singlePackage: false,
+      },
+      onePackage: {
+        singlePackage: true,
+      },
+    },
+  ],
+});
+```
+
+### Results
+
+#### Update speed
+
+The same update speed test was used again, this time it was much slower than <1s, up to 2.5-3s.
+There was no obvious difference between the 3 configs. If anything the dist version might be a couple of 100 ms quicker.
+
+#### Restart Server
+
+The server restart was also run with the following results:
+
+onePackage: ~27s
+monoRepoSrc: ~27s
+monoRepoDist: ~22s
+
+### Conclusion
+
+Monorepo setups do not seem to provide many opportunities to speed up editing of TypeScript code. The slightly faster
+updates when pointing `types` to declaration files will easily be offset by the time to regenerate those files.
+
+Since consuming declaration files is slightly faster, it seems the best method for improving performance would be to split the project into individually built packages that are loaded in through dependencies.
