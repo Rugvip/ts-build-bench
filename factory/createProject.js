@@ -26,6 +26,15 @@ async function applyProjectReferences(type, tr, { packages }) {
       }));
     });
   }
+
+  for (const pkg of [...packages, { name: 'main' }]) {
+    tr.modJson(`packages/${name}/package.json`, (pkg) => {
+      pkg.main = 'dist/src/index.js';
+      if (pkg.types.startsWith('dist/')) {
+        pkg.types = 'dist/src/index.d.ts';
+      }
+    });
+  }
 }
 
 module.exports = function createProject({
