@@ -9,6 +9,8 @@ async function applyProjectReferences(type, tr, { packages }) {
 
   await tr.modJson('tsconfig.json', (config) => {
     config.compilerOptions.composite = true;
+    config.compilerOptions.noEmit = false;
+    config.compilerOptions.emitDeclarationOnly = true;
   });
 
   if (type === 'root') {
