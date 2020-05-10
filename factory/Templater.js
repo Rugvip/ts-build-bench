@@ -46,4 +46,22 @@ module.exports = class Templater {
     await modFunc(pkg);
     await fs.writeJson(filePath, pkg, { spaces: 2 });
   }
+
+  async modText(path, modFunc) {
+    const filePath = resolvePath(this.targetDir, path);
+    const text = await fs.readFile(filePath, 'utf8');
+    const newText = await modFunc(text);
+    await fs.writeFile(filePath, newText, 'utf8');
+  }
+
+  async move(src, dst) {
+    await fs.move(
+      resolvePath(this.targetDir, src),
+      resolvePath(this.targetDir, dst)
+    );
+  }
+
+  async remove(path) {
+    await fs.remove(resolvePath(this.targetDir, path));
+  }
 };

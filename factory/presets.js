@@ -66,6 +66,14 @@ const presets = {
         types: 'src/index.ts',
       },
     }),
+    singlePackage: () => ({
+      monoRepo: {
+        singlePackage: false,
+      },
+      onePackage: {
+        singlePackage: true,
+      },
+    }),
     projectReferences: () => ({
       rootRefs: {
         projectReferences: 'root',

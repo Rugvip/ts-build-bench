@@ -37,13 +37,33 @@ async function applyProjectReferences(type, tr, { packages }) {
   }
 }
 
+async function switchToSinglePackage(tr, { packages, dir }) {
+  for (const { name } of packages) {
+    await tr.move(`packages/${name}/src`, `packages/main/src/${name}`);
+    await tr.remove(`packages/${name}`);
+  }
+
+  tr.modJson('packages/main/package.json', (pkg) => {
+    for (const key of Object.keys(pkg.dependencies)) {
+      if (key.startsWith('@internal/')) {
+        delete pkg.dependencies[key];
+      }
+    }
+  });
+
+  await tr.modText(`packages/main/src/deps.ts`, (text) => {
+    return text.replace(/@internal/g, '.');
+  });
+}
+
 module.exports = function createProject({
   path: projectPath,
   main,
   types,
   componentExports,
   packages,
-  projectReferences,
+  singlePackage = false,
+  projectReferences = null,
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
@@ -136,6 +156,9 @@ module.exports = function createProject({
     }
 
     await applyProjectReferences(projectReferences, tr, { packages });
+    if (singlePackage) {
+      await switchToSinglePackage(tr, { dir, packages });
+    }
   };
 
   return { dir, inflate };
