@@ -65,6 +65,17 @@ const presets = {
         types: 'src/index.ts',
       },
     }),
+    projectReferences: () => ({
+      rootRefs: {
+        projectReferences: 'root',
+      },
+      mainRefs: {
+        projectReferences: 'main',
+      },
+      noRefs: {
+        projectReferences: false,
+      },
+    }),
     componentExports: () => ({
       exportDefault: {
         componentExports: 'default',

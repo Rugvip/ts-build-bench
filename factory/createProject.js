@@ -2,14 +2,44 @@ const fs = require('fs-extra');
 const { resolve: resolvePath } = require('path');
 const Templater = require('./Templater');
 
+async function applyProjectReferences(type, tr, { packages }) {
+  if (!type) {
+    return;
+  }
+
+  await tr.modJson('tsconfig.json', (config) => {
+    config.compilerOptions.composite = true;
+  });
+
+  if (type === 'root') {
+    await tr.modJson('tsconfig.json', (config) => {
+      config.references = packages.map((pkg) => ({
+        path: `./packages/${pkg.name}/tsconfig.build.json`,
+      }));
+    });
+  } else if (type === 'main') {
+    await tr.modJson('packages/main/tsconfig.build.json', (config) => {
+      config.references = packages.map((pkg) => ({
+        path: `../${pkg.name}/tsconfig.build.json`,
+      }));
+    });
+  }
+}
+
 module.exports = function createProject({
   path: projectPath,
   main,
   types,
   componentExports,
   packages,
+  projectReferences,
 }) {
   const dir = resolvePath(projectPath);
+  packages = packages.map((pkg, index) => ({
+    name: `pkg${index + 1}`,
+    ...pkg,
+  }));
+
   const inflate = async () => {
     await fs.remove(dir);
     await fs.ensureDir(dir);
@@ -21,9 +51,9 @@ module.exports = function createProject({
 
     await tr.hydrate({ name: 'ts-project', path: '.', data: {} });
 
-    for (const [pkgIndex, package] of packages.entries()) {
-      const { libs, components } = package;
-      const name = `pkg${pkgIndex + 1}`;
+    for (const package of packages) {
+      const { name, libs, components } = package;
+
       await tr.hydrate({
         name: 'ts-package',
         path: `packages/${name}`,
@@ -93,6 +123,8 @@ module.exports = function createProject({
         pkg.dependencies[`@internal/${name}`] = '0.0.0';
       });
     }
+
+    await applyProjectReferences(projectReferences, tr, { packages });
   };
 
   return { dir, inflate };
