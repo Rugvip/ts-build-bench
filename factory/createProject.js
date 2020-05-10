@@ -69,6 +69,13 @@ async function applyBuildMode(buildMode, tr, { packages }) {
         return text.replace(/MODE = 'sucrase'/, "MODE = 'typescript'");
       });
     }
+  } else if (buildMode === 'none') {
+    for (const { name } of packages) {
+      await tr.modJson(`packages/${name}/package.json`, (pkg) => {
+        delete pkg.scripts['build:tsc'];
+        pkg.main = 'src/index.ts';
+      });
+    }
   }
 }
 
@@ -80,7 +87,7 @@ module.exports = function createProject({
   packages,
   singlePackage = false,
   projectReferences = null,
-  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript
+  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | none
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
