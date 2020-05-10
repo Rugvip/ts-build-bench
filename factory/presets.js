@@ -27,7 +27,7 @@ const presets = {
   baseConfig: (config) => ({
     path: 'workdir/bench',
     main: 'dist/index.js',
-    types: 'dist/index.d.ts',
+    types: 'src/index.ts',
     componentExports: 'default', // or named
     packages: Array(5).fill(presets.packages.balanced(5)),
     ...config,
