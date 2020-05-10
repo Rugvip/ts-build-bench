@@ -1,9 +1,6 @@
 const createProject = require('./createProject');
 
-module.exports = async function createProjectMatrix({
-  baseConfig,
-  dimensions,
-}) {
+module.exports = function createProjectMatrix({ baseConfig, dimensions }) {
   let configs = [baseConfig];
 
   for (const dimension of dimensions) {
@@ -16,5 +13,11 @@ module.exports = async function createProjectMatrix({
     });
   }
 
-  return Promise.all(configs.map(createProject));
+  const projects = configs.map(createProject);
+
+  return {
+    projects,
+    dirs: projects.map((p) => p.dir),
+    inflate: () => Promise.all(projects.map((p) => p.inflate())),
+  };
 };

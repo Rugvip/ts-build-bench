@@ -3,7 +3,7 @@ const { MatrixRunner } = require('./runner');
 const { printTimingSummary } = require('./stats');
 
 async function main() {
-  const projects = await createProjectMatrix({
+  const matrix = createProjectMatrix({
     baseConfig: presets.baseConfig(),
     dimensions: [
       presets.dimensions.muiImportMethod(),
@@ -12,7 +12,9 @@ async function main() {
     ],
   });
 
-  const r = new MatrixRunner(projects);
+  await matrix.inflate();
+
+  const r = new MatrixRunner(matrix);
   await r.prepare();
 
   const buildTimings = await r.timeCmd({ cmd: ['yarn', 'build'] });

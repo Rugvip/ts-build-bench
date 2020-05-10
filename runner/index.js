@@ -52,7 +52,7 @@ class ProjectRunner {
 exports.ProjectRunner = ProjectRunner;
 
 exports.MatrixRunner = class MatrixRunner {
-  constructor(projects) {
+  constructor({ projects }) {
     this.runners = projects.map((project) => new ProjectRunner(project));
     this.dirs = projects.map((project) => basename(project.dir));
   }
