@@ -54,6 +54,12 @@ module.exports = class Templater {
     await fs.writeFile(filePath, newText, 'utf8');
   }
 
+  async setMode(path, mode) {
+    await this.modText(path, (text) => {
+      return text.replace(/const MODE = '.*'/, `const MODE = '${mode}'`);
+    });
+  }
+
   async move(src, dst) {
     await fs.move(
       resolvePath(this.targetDir, src),

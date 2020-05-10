@@ -65,9 +65,7 @@ async function applyBuildMode(buildMode, tr, { packages }) {
 
   if (buildMode === 'rollup-typescript') {
     for (const { name } of packages) {
-      await tr.modText(`packages/${name}/rollup.config.js`, (text) => {
-        return text.replace(/MODE = 'sucrase'/, "MODE = 'typescript'");
-      });
+      await tr.setMode(`packages/${name}/rollup.config.js`, 'typescript');
     }
   } else if (buildMode === 'none') {
     for (const { name } of packages) {
