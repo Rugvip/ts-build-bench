@@ -37,7 +37,7 @@ async function applyProjectReferences(type, tr, { packages }) {
   }
 }
 
-async function switchToSinglePackage(tr, { packages, dir }) {
+async function switchToSinglePackage(tr, { packages }) {
   for (const { name } of packages) {
     await tr.move(`packages/${name}/src`, `packages/main/src/${name}`);
     await tr.remove(`packages/${name}`);
@@ -56,6 +56,22 @@ async function switchToSinglePackage(tr, { packages, dir }) {
   });
 }
 
+async function applyBuildMode(buildMode, tr, { packages }) {
+  if (buildMode.startsWith('rollup-')) {
+    await tr.modJson(`package.json`, (pkg) => {
+      pkg.scripts.build = 'lerna run build:rollup';
+    });
+  }
+
+  if (buildMode === 'rollup-typescript') {
+    for (const { name } of packages) {
+      await tr.modText(`packages/${name}/rollup.config.js`, (text) => {
+        return text.replace(/MODE = 'sucrase'/, "MODE = 'typescript'");
+      });
+    }
+  }
+}
+
 module.exports = function createProject({
   path: projectPath,
   main,
@@ -64,6 +80,7 @@ module.exports = function createProject({
   packages,
   singlePackage = false,
   projectReferences = null,
+  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
@@ -156,6 +173,7 @@ module.exports = function createProject({
     }
 
     await applyProjectReferences(projectReferences, tr, { packages });
+    await applyBuildMode(buildMode, tr, { packages });
     if (singlePackage) {
       await switchToSinglePackage(tr, { dir, packages });
     }
