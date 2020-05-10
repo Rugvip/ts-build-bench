@@ -44,8 +44,11 @@ class ProjectRunner {
     return timings;
   }
 
-  async prepare() {
+  async inflate() {
     await this.project.inflate();
+  }
+
+  async prepare() {
     await this.runCmd('.', ['yarn', 'install']);
   }
 }
@@ -54,6 +57,10 @@ class MatrixRunner {
   constructor({ projects }) {
     this.runners = projects.map((project) => new ProjectRunner(project));
     this.dirs = projects.map((project) => basename(project.dir));
+  }
+
+  async inflate() {
+    await Promise.all(this.runners.map((r) => r.inflate()));
   }
 
   async prepare() {
@@ -92,17 +99,23 @@ function timingsSummary(timings) {
 
 async function processRunner({ matrix, prepare, benchmark }) {
   try {
+    const runInflate = process.argv.includes('inflate');
     const runPrepare = process.argv.includes('prepare');
     const runBenchmark = process.argv.includes('benchmark');
     const count = process.argv.find((arg) => arg.match(/^[0-9]+$/)) || 1;
 
     const r = new MatrixRunner(matrix);
 
-    if (runPrepare) {
+    if (runInflate) {
+      await r.inflate();
+    } else if (runPrepare) {
+      await r.prepare();
       await prepare(r);
     } else if (runBenchmark) {
       await benchmark(r, count);
     } else {
+      await r.inflate();
+      await r.prepare();
       await prepare(r);
       await benchmark(r, count);
     }

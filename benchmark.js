@@ -12,8 +12,6 @@ processRunner({
     ],
   }),
   prepare: async (runner) => {
-    await runner.prepare();
-
     const buildTimings = await runner.timeCmd({ cmd: ['yarn', 'build:tsc'] });
     console.log('*** BUILD TIMES ***');
     printTimingSummary(buildTimings);
