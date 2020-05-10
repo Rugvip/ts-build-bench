@@ -24,12 +24,13 @@ const presets = {
       components: presets.components.balanced(n),
     }),
   },
-  baseConfig: () => ({
+  baseConfig: (config) => ({
     path: 'workdir/bench',
     main: 'dist/index.js',
     types: 'dist/index.d.ts',
     componentExports: 'default', // or named
     packages: Array(5).fill(presets.packages.balanced(5)),
+    ...config,
   }),
   dimensions: {
     packageSizes: () => ({
