@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "build:tsc": "tsc --project tsconfig.build.json",
-    "typecheck": "tsc"
+    "lint": "tsc --project tsconfig.lint.json"
   },
   "dependencies": {
     "@material-ui/core": "^4.9.13",

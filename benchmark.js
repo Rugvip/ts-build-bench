@@ -14,13 +14,13 @@ processRunner({
   prepare: async (runner) => {
     await runner.prepare();
 
-    const buildTimings = await runner.timeCmd({ cmd: ['yarn', 'build'] });
+    const buildTimings = await runner.timeCmd({ cmd: ['yarn', 'build:tsc'] });
     console.log('*** BUILD TIMES ***');
     printTimingSummary(buildTimings);
   },
   benchmark: async (runner, count) => {
     const checkTimings = await runner.timeCmd({
-      cmd: ['yarn', 'main:typecheck'],
+      cmd: ['yarn', 'main:lint'],
       count,
     });
     console.log('*** CHECK TIMES ***');

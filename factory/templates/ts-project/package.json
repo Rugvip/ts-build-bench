@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "main:build": "yarn workspace main build",
-    "main:typecheck": "yarn workspace main typecheck",
-    "build": "lerna run build:tsc"
+    "main:build:tsc": "yarn workspace main build:tsc",
+    "main:lint": "yarn workspace main lint",
+    "build:tsc": "lerna run build:tsc"
   },
   "workspaces": {
     "packages": [
