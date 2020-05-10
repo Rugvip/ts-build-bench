@@ -40,10 +40,10 @@ module.exports = class Templater {
     await fs.appendFile(filePath, `\n${line}\n`, 'utf8');
   }
 
-  async addDep(path, name, version) {
+  async modJson(path, modFunc) {
     const filePath = resolvePath(this.targetDir, path);
     const pkg = await fs.readJson(filePath);
-    pkg.dependencies[name] = version;
+    await modFunc(pkg);
     await fs.writeJson(filePath, pkg, { spaces: 2 });
   }
 };

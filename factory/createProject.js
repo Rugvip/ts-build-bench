@@ -89,7 +89,9 @@ module.exports = function createProject({
         `packages/main/src/deps.ts`,
         `export * as ${name} from '@internal/${name}';`
       );
-      tr.addDep('packages/main/package.json', `@internal/${name}`, '0.0.0');
+      tr.modJson('packages/main/package.json', (pkg) => {
+        pkg.dependencies[`@internal/${name}`] = '0.0.0';
+      });
     }
   };
 
