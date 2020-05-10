@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const fs = require('fs-extra');
+const { resolve: resolvePath } = require('path');
+
+async function main() {
+  const dirs = await fs.readdir('workdir');
+  const removed = dirs.filter((dir) => dir.startsWith('bench-'));
+  await Promise.all(
+    removed.map((dir) => fs.remove(resolvePath('workdir', dir)))
+  );
+}
+
+main().catch((error) => {
+  console.error(error.stack || error);
+  process.exit(1);
+});
