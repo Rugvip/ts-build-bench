@@ -13,12 +13,12 @@ class ProjectRunner {
     this.rootDir = project.dir;
   }
 
-  async runCmd(target, cmd) {
+  async runCmd(path, cmd) {
     try {
-      const cwd = resolvePath(this.rootDir, target);
+      const cwd = resolvePath(this.rootDir, path);
       const projectParent = resolvePath(this.rootDir, '..');
-      const path = relativePath(projectParent, cwd);
-      console.log(`Running '${cmd.join(' ')}' in ${path}/`);
+      const targetPath = relativePath(projectParent, cwd);
+      console.log(`Running '${cmd.join(' ')}' in ${targetPath}/`);
       const { stdout } = await execFile(cmd[0], cmd.slice(1), {
         shell: true,
         cwd,
@@ -34,10 +34,14 @@ class ProjectRunner {
     }
   }
 
-  async timeCmd(target, cwd) {
-    const start = Date.now();
-    await this.runCmd(target, cwd);
-    return Date.now() - start;
+  async timeCmd({ path, cmd, count = 1 }) {
+    const timings = [];
+    for (let i = 0; i < count; i++) {
+      const start = Date.now();
+      await this.runCmd(path, cmd);
+      timings.push(Date.now() - start);
+    }
+    return timings;
   }
 
   async prepare() {
@@ -57,20 +61,32 @@ exports.MatrixRunner = class MatrixRunner {
     await Promise.all(this.runners.map((r) => r.prepare()));
   }
 
-  async runCmd(target, cmd) {
-    await Promise.all(this.runners.map((r) => r.runCmd(target, cmd)));
+  async runCmd(path, cmd) {
+    await Promise.all(this.runners.map((r) => r.runCmd(path, cmd)));
   }
 
-  async timeCmd(target, cmd) {
+  async timeCmd({ path, cmd, count }) {
     const times = {};
 
     for (const [index, r] of this.runners.entries()) {
       const dir = this.dirs[index];
-      const time = await r.timeCmd(target, cmd);
-      console.log(`Ran ${target} -> '${cmd.join(' ')}' in ${dir} in ${time}ms`);
-      times[dir] = time;
+      const timings = await r.timeCmd({ path, cmd, count });
+      console.log(
+        `Time [${dir}/${path}] ${cmd.join(' ')} = ${timingsSummary(timings)}`
+      );
+      times[dir] = timings;
     }
 
     return times;
   }
 };
+
+function timingsSummary(timings) {
+  const sum = (ns) => ns.reduce((sum, n) => sum + n, 0);
+
+  const avg = sum(timings) / timings.length;
+  const stdev = Math.sqrt(
+    sum(timings.map((ms) => (avg - ms) * (avg - ms))) / timings.length
+  );
+  return `avg=${avg.toFixed(0)}ms stdev=${stdev.toFixed(0)}`;
+}
