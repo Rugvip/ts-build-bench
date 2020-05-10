@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "main:lint": "yarn workspace main lint",
+    "bundle": "yarn workspace main bundle",
     "build": "lerna run build:tsc",
     "lint": "lerna run lint"
   },
