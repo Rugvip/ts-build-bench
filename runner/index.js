@@ -10,13 +10,13 @@ const execFile = promisify(childProcess.execFile);
 
 class ProjectRunner {
   constructor(project) {
-    this.rootDir = project.dir;
+    this.project = project;
   }
 
   async runCmd(path, cmd) {
     try {
-      const cwd = resolvePath(this.rootDir, path);
-      const projectParent = resolvePath(this.rootDir, '..');
+      const cwd = resolvePath(this.project.dir, path);
+      const projectParent = resolvePath(this.project.dir, '..');
       const targetPath = relativePath(projectParent, cwd);
       console.log(`Running '${cmd.join(' ')}' in ${targetPath}/`);
       const { stdout } = await execFile(cmd[0], cmd.slice(1), {
@@ -45,6 +45,7 @@ class ProjectRunner {
   }
 
   async prepare() {
+    await this.project.inflate();
     await this.runCmd('.', ['yarn', 'install']);
   }
 }
