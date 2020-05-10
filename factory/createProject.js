@@ -27,10 +27,10 @@ async function applyProjectReferences(type, tr, { packages }) {
     });
   }
 
-  for (const pkg of [...packages, { name: 'main' }]) {
+  for (const { name } of packages) {
     tr.modJson(`packages/${name}/package.json`, (pkg) => {
       pkg.main = 'dist/src/index.js';
-      if (pkg.types.startsWith('dist/')) {
+      if (pkg.types && pkg.types.startsWith('dist/')) {
         pkg.types = 'dist/src/index.d.ts';
       }
     });
