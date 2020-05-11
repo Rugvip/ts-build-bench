@@ -80,8 +80,11 @@ async function applyBuildMode(buildMode, tr, { packages }) {
   }
 }
 
-async function applyBundleMode(bundleMode, tr, { packages }) {
-  await tr.setMode(`packages/main/webpack.config.js`, bundleMode);
+async function applyBundleMode(bundleMode, bundleSourcemaps, tr, { packages }) {
+  await tr.setMode(
+    `packages/main/webpack.config.js`,
+    bundleSourcemaps ? `${bundleMode}–sourcemap` : bundleMode
+  );
 }
 
 module.exports = function createProject({
@@ -93,7 +96,8 @@ module.exports = function createProject({
   singlePackage = false,
   projectReferences = null,
   buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | none
-  bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase | sucrase-fork
+  bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
+  bundleSourcemaps = false,
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
@@ -187,7 +191,7 @@ module.exports = function createProject({
 
     await applyProjectReferences(projectReferences, tr, { packages });
     await applyBuildMode(buildMode, tr, { packages });
-    await applyBundleMode(bundleMode, tr, { packages });
+    await applyBundleMode(bundleMode, bundleSourcemaps, tr, { packages });
 
     if (singlePackage) {
       await switchToSinglePackage(tr, { dir, packages });

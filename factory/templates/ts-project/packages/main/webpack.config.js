@@ -6,7 +6,7 @@ const MODE = 'ts-fork';
 const plugins = [new HtmlWebpackPlugin()];
 const rules = [];
 
-if (MODE === 'ts-fork') {
+if (MODE.startsWith('ts-fork')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
@@ -20,7 +20,7 @@ if (MODE === 'ts-fork') {
     },
   });
   plugins.push(new ForkTsCheckerWebpackPlugin());
-} else if (MODE === 'ts-transpile') {
+} else if (MODE.startsWith('ts-transpile')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
@@ -33,7 +33,7 @@ if (MODE === 'ts-fork') {
       },
     },
   });
-} else if (MODE === 'sucrase') {
+} else if (MODE.startsWith('sucrase-transpile')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
@@ -42,7 +42,7 @@ if (MODE === 'ts-fork') {
       transforms: ['typescript', 'jsx', 'imports'],
     },
   });
-} else if (MODE === 'sucrase-fork') {
+} else if (MODE.startsWith('sucrase-fork')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
@@ -52,7 +52,7 @@ if (MODE === 'ts-fork') {
     },
   });
   plugins.push(new ForkTsCheckerWebpackPlugin());
-} else {
+} else if (MODE.endsWith('-sourcemap')) {
   throw new Error('Invalid Webpack Mode');
 }
 
@@ -60,7 +60,7 @@ module.exports = {
   mode: 'development',
   profile: false,
   bail: false,
-  devtool: 'cheap-module-eval-source-map',
+  devtool: MODE.endsWith('-sourcemap') ? 'cheap-module-eval-source-map' : false,
   entry: './src/index.ts',
   context: __dirname,
   resolve: {
