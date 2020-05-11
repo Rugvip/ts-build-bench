@@ -8,7 +8,7 @@ const rules = [];
 
 if (MODE === 'ts-fork') {
   rules.push({
-    test: /\.(tsx?|jsx?|mjs)$/,
+    test: /\.tsx?$/,
     exclude: /node_modules/,
     loader: 'ts-loader',
     options: {
@@ -35,7 +35,7 @@ if (MODE === 'ts-fork') {
   });
 } else if (MODE === 'sucrase') {
   rules.push({
-    test: /\.(tsx?|jsx?|mjs)$/,
+    test: /\.tsx?$/,
     exclude: /node_modules/,
     loader: '@sucrase/webpack-loader',
     options: {
