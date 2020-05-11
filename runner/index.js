@@ -71,7 +71,7 @@ class MatrixRunner {
     await Promise.all(this.runners.map((r) => r.runCmd(path, cmd)));
   }
 
-  async timeCmd({ path, cmd, count }) {
+  async timeCmd({ path = '.', cmd, count }) {
     const times = {};
 
     for (const [index, r] of this.runners.entries()) {
