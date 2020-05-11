@@ -97,7 +97,7 @@ module.exports = function createProject({
   projectReferences = null,
   buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | none
   bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
-  bundleSourcemaps = false,
+  bundleSourcemaps = true,
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
