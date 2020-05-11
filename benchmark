@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { createProjectMatrix, presets } = require('./factory');
 const { processRunner } = require('./runner');
 const { printTimingSummary } = require('./stats');
