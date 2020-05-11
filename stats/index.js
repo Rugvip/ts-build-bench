@@ -1,28 +1,67 @@
 function printTimingSummary(folderTimings) {
   const { dimensions, timings } = splitTimings(folderTimings);
+
+  printStats({ dimensions, timings });
+  console.log();
+
   const slices = sliceDimensions(dimensions, timings);
   const sliceStats = computeSliceStats(slices);
 
-  const fix = (n, p = 0) => n.toFixed(p);
-
   const printDimensions = (dimensions, prefix) => {
-    for (const [key, { stats, diff }] of Object.entries(dimensions)) {
-      const statsStr = `avg=${fix(stats.avg)} stdev=${fix(stats.stdev)}`;
-      const diffStr = diff ? ` diff=${fix(diff.avg, 3)}` : '';
-      console.log(`${prefix}[${key}] ${statsStr}${diffStr}`);
+    const size = Math.max(...Object.keys(dimensions).map((key) => key.length));
+
+    for (const [key, { diff }] of Object.entries(dimensions)) {
+      console.log(
+        `${prefix}${key.padEnd(size)} ${
+          diff.avg < 0.9 ? '<' : diff.avg > 1.1 ? '>' : '~'
+        } ${fix(diff.avg, 3)}`
+      );
     }
   };
 
   for (const [dimIndex, slice] of sliceStats.entries()) {
-    console.log(`Dimension ${dimIndex}`);
-    console.log(`  [${slice.base.name}] base`);
-    printDimensions(slice.base.dimensions, '    ');
+    console.log(`Dimension ${dimIndex} diff vs ${slice.base.name}`);
     for (const part of slice.parts) {
-      console.log(`  [${part.name}] avgDiff=${fix(part.total.avg, 3)}`);
+      console.log(`  ${part.name} avg=${fix(part.total.avg, 3)}`);
       printDimensions(part.dimensions, '    ');
     }
     console.log('');
   }
+}
+
+function printStats({ dimensions, timings }) {
+  const lastSize = Math.max(
+    ...dimensions.slice(-1)[0].map((part) => part.length)
+  );
+
+  function printDim(prefix, [dim, ...rest], timings) {
+    if (!dim) {
+      const stats = computeStats(timings[0].ms);
+      console.log(`${prefix}> avg=${fix(stats.avg)} stdev=${fix(stats.stdev)}`);
+      return;
+    }
+    for (const part of dim) {
+      const childTimings = timings
+        .filter(({ parts }) => parts[0] === part)
+        .map(({ parts, ms }) => ({
+          parts: parts.slice(1),
+          ms,
+        }));
+      if (rest.length === 0) {
+        const stats = computeStats(childTimings[0].ms);
+        console.log(
+          `${prefix}${part.padEnd(lastSize)} | avg=${fix(
+            stats.avg
+          )} stdev=${fix(stats.stdev)}`
+        );
+      } else {
+        console.log(`${prefix}${part}`);
+        printDim(`${prefix}  `, rest, childTimings);
+      }
+    }
+  }
+
+  printDim('', dimensions, timings);
 }
 
 function splitTimings(folderTimings) {
@@ -58,6 +97,10 @@ function sliceDimensions(dimensions, timings) {
     dimSlices.push(slices);
   }
   return dimSlices;
+}
+
+function fix(n, p = 0) {
+  return n.toFixed(p);
 }
 
 function sum(ns) {
