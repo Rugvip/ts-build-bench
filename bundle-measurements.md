@@ -427,3 +427,125 @@ Dimension 0 diff vs buildRollupEsbuild
 - A major issue with esbuild is it's lack of configurability, but by using it as a rollup plugin we hopefully get around that.
 - It would be a lot better if we could get the esbuild plugin for webpack to work as well. So that we're using the same processor in both rollup and webpack.
 - esbuild is so quick that it might be worth building packages separately for the webpack production build, and then just using ts-loader with transpileOnly, since the speed gained from using sucrase there would not be worth the risk of things breaking. With that setup we would end up with esbuild + ts-loader for prod builds, and sucrase for dev builds.
+
+## Run 8
+
+Got esbuild-loader working for webpack, so trying it out vs sucrase and ts-transpile in a small build:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig({
+    packages: Array(10).fill(presets.packages.balanced(10)),
+  }),
+  dimensions: [
+    {
+      buildRollupEsbuild: {
+        buildMode: 'rollup-esbuild',
+      },
+      buildNone: {
+        buildMode: 'none',
+      },
+    },
+    {
+      bundleTsTranspile: {
+        bundleMode: 'ts-transpile',
+      },
+      bundleSucrase: {
+        bundleMode: 'sucrase-transpile',
+      },
+      bundleEsbuild: {
+        bundleMode: 'esbuild-transpile',
+      },
+    },
+  ],
+});
+```
+
+Build, n = 1
+
+```text
+buildRollupEsbuild
+  bundleTsTranspile | avg=3729 stdev=0
+  bundleSucrase     | avg=3182 stdev=0
+  bundleEsbuild     | avg=2983 stdev=0
+buildNone
+  bundleTsTranspile | avg=855 stdev=0
+  bundleSucrase     | avg=791 stdev=0
+  bundleEsbuild     | avg=799 stdev=0
+```
+
+Bundle, n = 5
+
+```text
+buildRollupEsbuild
+  bundleTsTranspile | avg=3637 stdev=127
+  bundleSucrase     | avg=3511 stdev=203
+  bundleEsbuild     | avg=3524 stdev=67
+buildNone
+  bundleTsTranspile | avg=8201 stdev=95
+  bundleSucrase     | avg=4997 stdev=85
+  bundleEsbuild     | avg=4266 stdev=152
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildNone avg=1.630
+    bundleTsTranspile > 2.255
+    bundleSucrase     > 1.424
+    bundleEsbuild     > 1.211
+
+Dimension 1 diff vs bundleTsTranspile
+  bundleSucrase avg=0.787
+    buildRollupEsbuild ~ 0.965
+    buildNone          < 0.609
+  bundleEsbuild avg=0.744
+    buildRollupEsbuild ~ 0.969
+    buildNone          < 0.520
+```
+
+### Takeaways
+
+- esbuild isn't a lot faster than sucrase as a webpack loader, at least not for this small project. Given that it produces better output for rollup builds, and it'd be better to have uniform builds, it's probably the best option for use across the board.
+
+## Run 9
+
+Trying out esbuild in a large project:
+
+```js
+Array(100).fill(presets.packages.balanced(20));
+```
+
+Build, n = 5
+
+```text
+buildRollupEsbuild | avg=35388 stdev=1110
+buildNone          | avg=975 stdev=169
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildNone avg=0.028
+     < 0.028
+```
+
+Bundle, n = 5
+
+```text
+buildRollupEsbuild | avg=6912 stdev=458
+buildNone          | avg=15935 stdev=752
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildNone avg=2.305
+     > 2.305
+```
+
+Build times for same package size but just 5 packages, n = 5
+
+```text
+buildRollupEsbuild | avg=2065 stdev=376
+buildNone          | avg=613 stdev=36
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildNone avg=0.297
+     < 0.297
+```
+
+### Takeaways
+
+- Building all packages with rollup is twice as slow as just building directly with esbuild. And the final build speed is only ~2.3x as fast. Building just a few packages is much faster though, so package dist caching could speed up production builds a bit. It's likely not worth the complexity though, since a full bundling of a full production build is just 16s anyway.
