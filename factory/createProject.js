@@ -83,7 +83,7 @@ async function applyBuildMode(buildMode, tr, { packages }) {
 async function applyBundleMode(bundleMode, bundleSourcemaps, tr, { packages }) {
   await tr.setMode(
     `packages/main/webpack.config.js`,
-    bundleSourcemaps ? `${bundleMode}–sourcemap` : bundleMode
+    bundleSourcemaps ? `${bundleMode}-sourcemap` : bundleMode
   );
 }
 

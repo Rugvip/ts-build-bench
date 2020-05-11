@@ -52,7 +52,7 @@ if (MODE.startsWith('ts-fork')) {
     },
   });
   plugins.push(new ForkTsCheckerWebpackPlugin());
-} else if (MODE.endsWith('-sourcemap')) {
+} else {
   throw new Error('Invalid Webpack Mode');
 }
 
