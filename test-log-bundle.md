@@ -1,4 +1,4 @@
-# Webpack Bundling Measurements
+# Webpack Bundling Test Log
 
 ## Initial Test Setup
 
@@ -36,7 +36,7 @@ createProjectMatrix({
 });
 ```
 
-## Run 1
+## Test 1
 
 This run was done before fixing the include patterns of the Webpack loaders to only process ts files.
 
@@ -105,7 +105,7 @@ Dimension 1
 - Sucrase many times faster than ts-fork, even for small projects. But ofc doesn't do any type checking.
 - There's no difference in bundle time across different build methods when all files are processed by the loader.
 
-## Run 2
+## Test 2
 
 This run updated the webpack bundlers to only process TypeScript files, so any method that builds packages ahead of time into JS might get more of a speedup now. It also adds ts-transpile as a bundle strategy, which simply removes the ts fork plugin, giving a more for comparison to sucrase.
 
@@ -198,7 +198,7 @@ Dimension 1
 - Sucrase is faster than transpileOnly ts-loader, but the difference is much smaller, at least in a small project.
 - With typechecking the build method doesn't matter much, but pre-building packages is somewhat faster when using transpileOnly. No big difference for sucrase though.
 
-## Run 3
+## Test 3
 
 Another run of the same, small project. Removing tsc and rollupTs build methods, as those are pretty much the same as rollupSucrase but much slower to test.
 
@@ -231,7 +231,7 @@ Dimension 1
 
 - Time to test in a bigger project
 
-## Run 4
+## Test 4
 
 Same us 3, but much larger project. With sourcemaps disabled.
 
@@ -284,7 +284,7 @@ Dimension 1
 - Should we do type checks as a part of the bundling, or leave that as a separate step?
 - Does adding source maps affect the results?
 
-## Run 5
+## Test 5
 
 Trying out sucrase + ts-fork plugin, in a smaller project
 
@@ -314,7 +314,7 @@ Dimension 1
 
 - Using sucrase + ts-fork checker plugin seems to work just fine, but will also need to try it out in a dev server. Using sucrase will give us the benefit of very quick updates and bootup times, and with the ts-fork plugin we still get type checking in the terminal.
 
-## Run 6
+## Test 6
 
 Trying out impact of enabling sourcemaps, with a slightly smaller project than last time
 
@@ -359,7 +359,7 @@ Some things tried and failed:
 - using `type: 'javascript/esm'` in webpack loader.
   - This makes the build real fast, because it throws away all dependencies
 
-## Run 7
+## Test 7
 
 Trying out esbuild plugin as an alternative to sucrase.
 
@@ -428,7 +428,7 @@ Dimension 0 diff vs buildRollupEsbuild
 - It would be a lot better if we could get the esbuild plugin for webpack to work as well. So that we're using the same processor in both rollup and webpack.
 - esbuild is so quick that it might be worth building packages separately for the webpack production build, and then just using ts-loader with transpileOnly, since the speed gained from using sucrase there would not be worth the risk of things breaking. With that setup we would end up with esbuild + ts-loader for prod builds, and sucrase for dev builds.
 
-## Run 8
+## Test 8
 
 Got esbuild-loader working for webpack, so trying it out vs sucrase and ts-transpile in a small build:
 
@@ -505,7 +505,7 @@ Dimension 1 diff vs bundleTsTranspile
 
 - esbuild isn't a lot faster than sucrase as a webpack loader, at least not for this small project. Given that it produces better output for rollup builds, and it'd be better to have uniform builds, it's probably the best option for use across the board.
 
-## Run 9
+## Test 9
 
 Trying out esbuild in a large project:
 
