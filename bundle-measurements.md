@@ -282,6 +282,7 @@ Dimension 1
 
 - Can we use sucrase with the ts-fork plugin? So we can get both the sucrase speedup but also async type feedback.
 - Should we do type checks as a part of the bundling, or leave that as a separate step?
+- Does adding source maps affect the results?
 
 ### Run 5
 
@@ -312,3 +313,39 @@ Dimension 1
 ### Takeaways
 
 - Using sucrase + ts-fork checker plugin seems to work just fine, but will also need to try it out in a dev server. Using sucrase will give us the benefit of very quick updates and bootup times, and with the ts-fork plugin we still get type checking in the terminal.
+
+### Run 6
+
+Trying out impact of enabling sourcemaps, with a slightly smaller project than last time
+
+```js
+Array(5).fill(presets.packages.balanced(9));
+```
+
+Bundle, n = 3
+
+```text
+Dimension 2
+  [withMap] base
+    [buildRollupSucrase-bundleTsTranspile] avg=4284 stdev=170
+    [buildRollupSucrase-bundleTsFork] avg=15969 stdev=482
+    [buildRollupSucrase-bundleSucrase] avg=4148 stdev=42
+    [buildRollupSucrase-bundleSucraseFork] avg=15626 stdev=884
+    [buildNone-bundleTsTranspile] avg=6943 stdev=96
+    [buildNone-bundleTsFork] avg=16789 stdev=403
+    [buildNone-bundleSucrase] avg=5391 stdev=299
+    [buildNone-bundleSucraseFork] avg=15592 stdev=581
+  [noMap] avgDiff=0.980
+    [buildRollupSucrase-bundleTsTranspile] avg=4033 stdev=57 diff=0.941
+    [buildRollupSucrase-bundleTsFork] avg=15942 stdev=523 diff=0.998
+    [buildRollupSucrase-bundleSucrase] avg=3881 stdev=80 diff=0.936
+    [buildRollupSucrase-bundleSucraseFork] avg=16434 stdev=677 diff=1.052
+    [buildNone-bundleTsTranspile] avg=7479 stdev=288 diff=1.077
+    [buildNone-bundleTsFork] avg=16865 stdev=1645 diff=1.004
+    [buildNone-bundleSucrase] avg=4672 stdev=147 diff=0.867
+    [buildNone-bundleSucraseFork] avg=14998 stdev=1138 diff=0.962
+```
+
+### Takeaways
+
+- Sourcemaps cheap-module-eval-source-map don't seem to slow down the build at all, will keep them on by default for now. Who doesn't want sourcemaps.
