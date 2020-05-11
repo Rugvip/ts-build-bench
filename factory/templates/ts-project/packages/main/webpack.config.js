@@ -60,7 +60,7 @@ module.exports = {
   mode: 'development',
   profile: false,
   bail: false,
-  devtool: MODE.endsWith('-sourcemap') ? 'cheap-module-eval-source-map' : false,
+  devtool: MODE.endsWith('-sourcemap') ? 'eval-cheap-module-source-map' : false,
   entry: './src/index.ts',
   context: __dirname,
   resolve: {
@@ -75,14 +75,4 @@ module.exports = {
     filename: 'bundle.js',
   },
   plugins,
-  node: {
-    module: 'empty',
-    dgram: 'empty',
-    dns: 'mock',
-    fs: 'empty',
-    http2: 'empty',
-    net: 'empty',
-    tls: 'empty',
-    child_process: 'empty',
-  },
 };
