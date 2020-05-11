@@ -135,7 +135,7 @@ module.exports = function createProject({
 
         await tr.addLine(
           `packages/${name}/src/lib/index.ts`,
-          `export * as lib${n} from './lib-${n}';`
+          `import * as lib${n} from './lib-${n}';\nexport { lib${n} };`
         );
 
         // Add to main package
@@ -183,7 +183,7 @@ module.exports = function createProject({
       // Add to main package
       await tr.addLine(
         `packages/main/src/deps.ts`,
-        `export * as ${name} from '@internal/${name}';`
+        `import * as ${name} from '@internal/${name}';\nexport { ${name} };`
       );
       tr.modJson('packages/main/package.json', (pkg) => {
         pkg.dependencies[`@internal/${name}`] = '0.0.0';

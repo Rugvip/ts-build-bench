@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { ESBuildPlugin } = require('esbuild-loader');
 
 const MODE = 'ts-fork';
 
@@ -33,6 +34,18 @@ if (MODE.startsWith('ts-fork')) {
       },
     },
   });
+} else if (MODE.startsWith('esbuild-transpile')) {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    use: {
+      loader: 'esbuild-loader',
+      options: {
+        target: 'es2019',
+      },
+    },
+  });
+  plugins.push(new ESBuildPlugin());
 } else if (MODE.startsWith('sucrase-transpile')) {
   rules.push({
     test: /\.tsx?$/,
