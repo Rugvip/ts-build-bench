@@ -64,13 +64,14 @@ async function applyBuildMode(buildMode, tr, { packages }) {
     await tr.modJson('tsconfig.json', (pkg) => {
       pkg.compilerOptions.module = 'ESNext';
     });
+
+    const rollupMode = buildMode.replace(/^rollup-/, '');
+    for (const { name } of packages) {
+      await tr.setMode(`packages/${name}/rollup.config.js`, rollupMode);
+    }
   }
 
-  if (buildMode === 'rollup-typescript') {
-    for (const { name } of packages) {
-      await tr.setMode(`packages/${name}/rollup.config.js`, 'typescript');
-    }
-  } else if (buildMode === 'none') {
+  if (buildMode === 'none') {
     for (const { name } of packages) {
       await tr.modJson(`packages/${name}/package.json`, (pkg) => {
         delete pkg.scripts['build:tsc'];
@@ -95,7 +96,7 @@ module.exports = function createProject({
   packages,
   singlePackage = false,
   projectReferences = null,
-  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | none
+  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
   bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
   bundleSourcemaps = true,
 }) {
