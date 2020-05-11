@@ -358,3 +358,72 @@ Some things tried and failed:
   - Couldn't get this to work because of export syntax issues
 - using `type: 'javascript/esm'` in webpack loader.
   - This makes the build real fast, because it throws away all dependencies
+
+### Run 7
+
+Trying out esbuild plugin as an alternative to sucrase.
+
+A bit different project setup, much larger and fewer dimensions:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig({
+    packages: Array(50).fill(presets.packages.balanced(20)),
+    bundleMode: 'sucrase-transpile',
+  }),
+  dimensions: [
+    {
+      buildRollupEsbuild: {
+        buildMode: 'rollup-esbuild',
+      },
+      buildRollupSucrase: {
+        buildMode: 'rollup-sucrase',
+      },
+    },
+  ],
+});
+```
+
+The main thing we're looking at is the difference in build time. Also got new fancy stats output now:
+
+Build, n = 1
+
+```text
+buildRollupEsbuild | avg=17390 stdev=0
+buildRollupSucrase | avg=23741 stdev=0
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildRollupSucrase avg=1.365
+     > 1.365
+```
+
+Bundle, n = 10
+
+```text
+buildRollupEsbuild | avg=5562 stdev=173
+buildRollupSucrase | avg=6971 stdev=254
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildRollupSucrase avg=1.253
+     > 1.253
+```
+
+Running some more build benchmarks to get conclusive results...
+
+Build, n = 10
+
+```text
+buildRollupEsbuild | avg=16075 stdev=1293
+buildRollupSucrase | avg=23238 stdev=1437
+
+Dimension 0 diff vs buildRollupEsbuild
+  buildRollupSucrase avg=1.446
+     > 1.446
+```
+
+#### Takeaways
+
+- The esbuild plugin for rollup is faster than sucrase, by about ~45%. It also produces output that is ~25% faster to process in the webpack step.
+- A major issue with esbuild is it's lack of configurability, but by using it as a rollup plugin we hopefully get around that.
+- It would be a lot better if we could get the esbuild plugin for webpack to work as well. So that we're using the same processor in both rollup and webpack.
+- esbuild is so quick that it might be worth building packages separately for the webpack production build, and then just using ts-loader with transpileOnly, since the speed gained from using sucrase there would not be worth the risk of things breaking. With that setup we would end up with esbuild + ts-loader for prod builds, and sucrase for dev builds.
