@@ -42,6 +42,16 @@ if (MODE === 'ts-fork') {
       transforms: ['typescript', 'jsx', 'imports'],
     },
   });
+} else if (MODE === 'sucrase-fork') {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: '@sucrase/webpack-loader',
+    options: {
+      transforms: ['typescript', 'jsx', 'imports'],
+    },
+  });
+  plugins.push(new ForkTsCheckerWebpackPlugin());
 } else {
   throw new Error('Invalid Webpack Mode');
 }
