@@ -310,7 +310,7 @@ Dimension 1
     [buildNone] avg=15765 stdev=1108 diff=1.830
 ```
 
-### Takeaways
+#### Takeaways
 
 - Using sucrase + ts-fork checker plugin seems to work just fine, but will also need to try it out in a dev server. Using sucrase will give us the benefit of very quick updates and bootup times, and with the ts-fork plugin we still get type checking in the terminal.
 
@@ -346,6 +346,15 @@ Dimension 2
     [buildNone-bundleSucraseFork] avg=14998 stdev=1138 diff=0.962
 ```
 
-### Takeaways
+#### Takeaways
 
 - Sourcemaps cheap-module-eval-source-map don't seem to slow down the build at all, will keep them on by default for now. Who doesn't want sourcemaps.
+
+### Failed attempts
+
+Some things tried and failed:
+
+- use esbuild-loader for webpack
+  - Couldn't get this to work because of export syntax issues
+- using `type: 'javascript/esm'` in webpack loader.
+  - This makes the build real fast, because it throws away all dependencies
