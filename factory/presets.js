@@ -94,6 +94,42 @@ const presets = {
         componentExports: 'named',
       },
     }),
+    buildStrategies: () => ({
+      buildTsc: {
+        buildMode: 'tsc',
+      },
+      buildRollupTs: {
+        buildMode: 'rollup-typescript',
+      },
+      buildRollupSucrase: {
+        buildMode: 'rollup-sucrase',
+      },
+      buildNone: {
+        buildMode: 'none',
+      },
+    }),
+    bundleStrategies: () => ({
+      bundleTsTranspile: {
+        bundleMode: 'ts-transpile',
+      },
+      bundleTsFork: {
+        bundleMode: 'ts-fork',
+      },
+      bundleSucrase: {
+        bundleMode: 'sucrase-transpile',
+      },
+      bundleSucraseFork: {
+        bundleMode: 'sucrase-fork',
+      },
+    }),
+    bundleSourcemaps: () => ({
+      withMap: {
+        bundleSourcemaps: true,
+      },
+      noMap: {
+        bundleSourcemaps: false,
+      },
+    }),
   },
 };
 
