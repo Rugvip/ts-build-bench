@@ -20,6 +20,19 @@ if (MODE === 'ts-fork') {
     },
   });
   plugins.push(new ForkTsCheckerWebpackPlugin());
+} else if (MODE === 'ts-transpile') {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: 'ts-loader',
+    options: {
+      // disable type checker - handled by ForkTsCheckerWebpackPlugin
+      transpileOnly: true,
+      compilerOptions: {
+        module: 'CommonJS',
+      },
+    },
+  });
 } else if (MODE === 'sucrase') {
   rules.push({
     test: /\.(tsx?|jsx?|mjs)$/,

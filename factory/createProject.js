@@ -83,6 +83,8 @@ async function applyBuildMode(buildMode, tr, { packages }) {
 async function applyBundleMode(bundleMode, tr, { packages }) {
   if (bundleMode === 'sucrase') {
     await tr.setMode(`packages/main/webpack.config.js`, 'sucrase');
+  } else if (bundleMode === 'ts-transpile') {
+    await tr.setMode(`packages/main/webpack.config.js`, 'ts-transpile');
   }
 }
 
@@ -95,7 +97,7 @@ module.exports = function createProject({
   singlePackage = false,
   projectReferences = null,
   buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | none
-  bundleMode = 'ts-fork', // ts-fork | sucrase
+  bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
