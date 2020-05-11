@@ -58,8 +58,11 @@ async function switchToSinglePackage(tr, { packages }) {
 
 async function applyBuildMode(buildMode, tr, { packages }) {
   if (buildMode.startsWith('rollup-')) {
-    await tr.modJson(`package.json`, (pkg) => {
+    await tr.modJson('package.json', (pkg) => {
       pkg.scripts.build = 'lerna run build:rollup';
+    });
+    await tr.modJson('tsconfig.json', (pkg) => {
+      pkg.compilerOptions.module = 'ESNext';
     });
   }
 

@@ -27,7 +27,7 @@
     "allowJs": true,
     "jsx": "react",
     "target": "ES2019",
-    "module": "ESNext",
+    "module": "CommonJS",
     "lib": ["DOM", "DOM.Iterable", "ScriptHost", "ES2019"],
     "types": ["node"]
   }
