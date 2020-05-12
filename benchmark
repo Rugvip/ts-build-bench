@@ -33,17 +33,38 @@ processRunner({
       async (runner) => {
         await runner.runCmd('.', ['yarn', 'lint']);
       },
-      async (runner) => {
-        await runner.runCmd('.', ['yarn', 'clean']);
+      async (runner, isLastRun) => {
+        if (!isLastRun) {
+          await runner.runCmd('.', ['yarn', 'clean']);
+        }
       }
     );
     console.log('*** FIRST LINT TIMES ***');
     printTimingSummary(timings1);
 
-    await runner.runCmd('.', ['yarn', 'lint']);
-
     const timings2 = await runner.timeCmd({ cmd: ['yarn', 'lint'], count });
     console.log('*** SECOND LINT TIMES ***');
     printTimingSummary(timings2);
+
+    const timings3 = await runner.time(count, async (runner) => {
+      runner.runCmd('packages/pkg1/src/components/component-1', [
+        'sed',
+        '-i',
+        '""',
+        's/a\\?/x\\?/',
+        'Component.tsx',
+      ]);
+      await runner.runCmd('.', ['yarn', 'lint'], { expectFail: true });
+      runner.runCmd('packages/pkg1/src/components/component-1', [
+        'sed',
+        '-i',
+        '""',
+        's/x\\?/a\\?/',
+        'Component.tsx',
+      ]);
+      await runner.runCmd('.', ['yarn', 'lint']);
+    });
+    console.log('*** CHANGED LINT TIMES ***');
+    printTimingSummary(timings3);
   },
 });
