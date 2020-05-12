@@ -299,3 +299,92 @@ Dimension 0 diff vs allInc
 
 - Using project references seems to speed up clean lerna lints too.
 - Using tsc build mode seems very slow, so we likely don't want to rely on this for the clean build. It might come in handy to have this in watch mode though.
+
+## Test 5
+
+Same as previous config, but running full test including new benchmark of linting changed files.
+
+The changed lint test is double the actual expected lint time, as it modifies a file and expects an error, then changes it back and expects a successful lint run.
+
+First lint, n = 5
+
+```text
+allInc  | avg=29451 stdev=369
+allRefs | avg=24719 stdev=743
+topRefs | avg=43392 stdev=536
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.839
+     < 0.839
+  topRefs avg=1.473
+     > 1.473
+```
+
+Second lint, n = 5
+
+```text
+allInc  | avg=7460 stdev=510
+allRefs | avg=7110 stdev=249
+topRefs | avg=623 stdev=8
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.953
+     ~ 0.953
+  topRefs avg=0.084
+     < 0.084
+```
+
+Changed lint, n = 5
+
+```text
+allInc  | avg=15818 stdev=366
+allRefs | avg=15298 stdev=380
+topRefs | avg=6170 stdev=142
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.967
+     ~ 0.967
+  topRefs avg=0.390
+     < 0.390
+```
+
+### Takeaways
+
+- `tsc --build` is much faster at detecting and linting only changed packages, while still much slower than running lint through lerna for the clean build.
+- Need to benchmark the combination of lerna lint for full linting, and if the result of that is fine to use later with `tsc --build`.
+
+### Test 6
+
+Trying out same setup as previous test, but always using `tsc --build` for the changed lint, and skipping the setup without project references.
+
+Change lint, n = 5
+
+```text
+allRefs | avg=6154 stdev=293
+topRefs | avg=6100 stdev=94
+
+Dimension 0 diff vs allRefs
+  topRefs avg=0.991
+     ~ 0.991
+```
+
+Needing to dig into the first lint time after a full build:
+
+Followup lint, changed, n = 1
+
+```text
+allRefs | avg=6704 stdev=0
+topRefs | avg=5933 stdev=0
+```
+
+Followup lint, unchanged, n = 1
+
+```text
+allRefs | avg=745 stdev=0
+topRefs | avg=612 stdev=0
+```
+
+### Takeaways
+
+- It seems like running a lerna lint followed by a `tsc --build` works just fine, it's possible that it's a bit slower but at most some 10%.
+- Time to try larger projects.
