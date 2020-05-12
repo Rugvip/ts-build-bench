@@ -549,3 +549,9 @@ Dimension 0 diff vs buildRollupEsbuild
 ### Takeaways
 
 - Building all packages with rollup is twice as slow as just building directly with esbuild. And the final build speed is only ~2.3x as fast. Building just a few packages is much faster though, so package dist caching could speed up production builds a bit. It's likely not worth the complexity though, since a full bundling of a full production build is just 16s anyway.
+
+## Bonus Test
+
+Tried out esbuild in a large internal project using any concievable syntax combination from TypeScript. Webpack had to be bumped to a newer minor version to support the syntax output by esbuild-loader. There's also a lot of .js files with JSX in the project, which isn't configurable in the esbuild module, although it is configurable in the commandline, so had to modify the dep in node_modules.
+
+With those fixes in place the project built fine, and with a significant speedup from babel. I couldn't do any real comparisons because the origininal build broke when bumping webpack. The unminified output was ~10% larger, and I didn't try out minification yet. One downside that was found is that chunk names were lost.
