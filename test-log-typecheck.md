@@ -224,7 +224,7 @@ lintTopRefs with noRefs is a noop, ignore those values
 
 - Incremental tsc is likely a given, remains to be seen if it's something we want to run in CI/CD or not. Skipping non-incremental for further tests.
 
-# Test 3
+## Test 3
 
 Focusing in on incremental with just 1 3-part dimension:
 
@@ -276,3 +276,26 @@ Dimension 0 diff vs allInc
 ### Takeaways
 
 - Initial result is not reliable enough, need to figure out how to run that in a loop.
+
+## Test 4
+
+Multiple runs of clean lean, also fixed main not being included in the project references version.
+
+First lint, n = 5
+
+```text
+allInc  | avg=30141 stdev=1399
+allRefs | avg=25783 stdev=1269
+topRefs | avg=45644 stdev=717
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.855
+     < 0.855
+  topRefs avg=1.514
+     > 1.514
+```
+
+### Takeaways
+
+- Using project references seems to speed up clean lerna lints too.
+- Using tsc build mode seems very slow, so we likely don't want to rely on this for the clean build. It might come in handy to have this in watch mode though.
