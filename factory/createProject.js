@@ -48,13 +48,13 @@ async function applyProjectReferences(type, tr, { packages }) {
   });
 
   for (const { name } of packages) {
-    tr.modJson(`packages/${name}/package.json`, (pkg) => {
+    await tr.modJson(`packages/${name}/package.json`, (pkg) => {
       pkg.main = 'dist/src/index.js';
       if (pkg.types && pkg.types.startsWith('dist/')) {
         pkg.types = 'dist/src/index.d.ts';
       }
     });
-    tr.modJson(`packages/${name}/tsconfig.json`, (config) => {
+    await tr.modJson(`packages/${name}/tsconfig.json`, (config) => {
       if (spreadComposite) {
         config.compilerOptions.composite = true;
       }
@@ -66,11 +66,11 @@ async function applyLintStrategy(lintStrategy, tr, { packages }) {
   if (lintStrategy === 'all') {
     return;
   } else if (lintStrategy === 'top') {
-    tr.modJson(`package.json`, (pkg) => {
+    await tr.modJson(`package.json`, (pkg) => {
       pkg.scripts.lint = 'tsc -p tsconfig.lint.json';
     });
   } else if (lintStrategy === 'top-references') {
-    tr.modJson(`package.json`, (pkg) => {
+    await tr.modJson(`package.json`, (pkg) => {
       pkg.scripts.lint = 'tsc -b tsconfig.json';
     });
   }
@@ -82,7 +82,7 @@ async function switchToSinglePackage(tr, { packages }) {
     await tr.remove(`packages/${name}`);
   }
 
-  tr.modJson('packages/main/package.json', (pkg) => {
+  await tr.modJson('packages/main/package.json', (pkg) => {
     for (const key of Object.keys(pkg.dependencies)) {
       if (key.startsWith('@internal/')) {
         delete pkg.dependencies[key];
@@ -225,7 +225,7 @@ module.exports = function createProject({
         `packages/main/src/deps.ts`,
         `import * as ${name} from '@internal/${name}';\nexport { ${name} };`
       );
-      tr.modJson('packages/main/package.json', (pkg) => {
+      await tr.modJson('packages/main/package.json', (pkg) => {
         pkg.dependencies[`@internal/${name}`] = '0.0.0';
       });
     }
