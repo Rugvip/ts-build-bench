@@ -13,7 +13,7 @@ class ProjectRunner {
     this.project = project;
   }
 
-  async runCmd(path, cmd) {
+  async runCmd(path, cmd, { expectFail = false } = {}) {
     try {
       const cwd = resolvePath(this.project.dir, path);
       const projectParent = resolvePath(this.project.dir, '..');
@@ -25,6 +25,9 @@ class ProjectRunner {
       });
       return stdout.trim();
     } catch (error) {
+      if (expectFail) {
+        return;
+      }
       if (error.stderr) {
         process.stderr.write(error.stderr);
       }
@@ -84,7 +87,8 @@ class MatrixRunner {
         console.log(`Run in ${dir} took ${time}ms`);
 
         if (cleanup) {
-          await cleanup(r);
+          const isLastRun = i === count - 1;
+          await cleanup(r, isLastRun);
         }
 
         times[dir] = times[dir] || [];
