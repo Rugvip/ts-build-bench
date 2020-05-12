@@ -555,3 +555,105 @@ Dimension 0 diff vs buildRollupEsbuild
 Tried out esbuild in a large internal project using any concievable syntax combination from TypeScript. Webpack had to be bumped to a newer minor version to support the syntax output by esbuild-loader. There's also a lot of .js files with JSX in the project, which isn't configurable in the esbuild module, although it is configurable in the commandline, so had to modify the dep in node_modules.
 
 With those fixes in place the project built fine, and with a significant speedup from babel. I couldn't do any real comparisons because the origininal build broke when bumping webpack. The unminified output was ~10% larger, and I didn't try out minification yet. One downside that was found is that chunk names were lost.
+
+## Test 10
+
+Going with the bundle everything approach, trying out different transpilers for typescript.
+
+Initial test in a small project:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig({
+    packages: Array(5).fill(presets.packages.balanced(10)),
+    buildMode: 'none',
+  }),
+  dimensions: [
+    {
+      bundleTs: {
+        bundleMode: 'ts-transpile',
+      },
+      bundleSucrase: {
+        bundleMode: 'sucrase-transpile',
+      },
+      bundleEsbuild: {
+        bundleMode: 'esbuild-transpile',
+      },
+      bundleBabel: {
+        bundleMode: 'babel-transpile',
+      },
+    },
+  ],
+});
+```
+
+Bundle, n = 5
+
+```text
+bundleTs      | avg=6647 stdev=467
+bundleSucrase | avg=4372 stdev=223
+bundleEsbuild | avg=3936 stdev=86
+bundleBabel   | avg=7051 stdev=204
+
+Dimension 0 diff vs bundleTs
+  bundleSucrase avg=0.658
+     < 0.658
+  bundleEsbuild avg=0.592
+     < 0.592
+  bundleBabel avg=1.061
+     ~ 1.061
+```
+
+### Takeaways
+
+- In a pretty small project babel seems slightly worse than using ts-loader. It also requires a bunch of extra plugins to support the latest features.
+
+## Test 11
+
+Same as previous test, but a much larger project:
+
+```js
+Array(50).fill(presets.packages.balanced(10));
+```
+
+Bundle, n = e
+
+```text
+bundleSucrase avg=0.447
+   < 0.447
+bundleEsbuild avg=0.370
+   < 0.370
+bundleBabel avg=1.222
+   > 1.222
+```
+
+### Takeaways
+
+- Seems like ts-loader would be a better option than babel-loader.
+
+## Test 12
+
+Same as previous, but huge project:
+
+```js
+Array(100).fill(presets.packages.balanced(20));
+```
+
+```text
+bundleTs      | avg=68842 stdev=6494
+bundleSucrase | avg=24358 stdev=426
+bundleEsbuild | avg=21019 stdev=1564
+bundleBabel   | avg=85662 stdev=3053
+
+Dimension 0 diff vs bundleTs
+  bundleSucrase avg=0.354
+     < 0.354
+  bundleEsbuild avg=0.305
+     < 0.305
+  bundleBabel avg=1.244
+     > 1.244
+```
+
+### Takeaways
+
+- Babel is definitely the slowest option, and sucrase/esbuild are surprisingly close, and they both provide a huge speedup.
