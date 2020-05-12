@@ -388,3 +388,156 @@ topRefs | avg=612 stdev=0
 
 - It seems like running a lerna lint followed by a `tsc --build` works just fine, it's possible that it's a bit slower but at most some 10%.
 - Time to try larger projects.
+
+## Test 7
+
+Same as previous config, but much larger project:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig({
+    packages: Array(50).fill(presets.packages.balanced(20)),
+  }),
+  dimensions: [
+    {
+      allInc: {
+        lintStrategy: 'all',
+        projectReferences: 'incremental',
+      },
+      allRefs: {
+        lintStrategy: 'all',
+        projectReferences: 'enabled',
+      },
+      topRefs: {
+        lintStrategy: 'top-references',
+        projectReferences: 'enabled',
+      },
+    },
+  ],
+});
+```
+
+First lint, n = 3
+
+```text
+allInc  | avg=231204 stdev=14297
+allRefs | avg=225363 stdev=1714
+topRefs | avg=375197 stdev=9138
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.975
+     ~ 0.975
+  topRefs avg=1.623
+     > 1.623
+```
+
+Followup project references lint, n = 1
+
+allInc is a noop
+
+```text
+allInc  | avg=795 stdev=0
+allRefs | avg=1499 stdev=0
+topRefs | avg=1454 stdev=0
+
+Dimension 0 diff vs allInc
+  allRefs avg=1.886
+     > 1.886
+  topRefs avg=1.829
+     > 1.829
+```
+
+Second lint, n = 3
+
+```text
+allInc  | avg=55846 stdev=6270
+allRefs | avg=54423 stdev=1899
+topRefs | avg=1390 stdev=43
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.975
+     ~ 0.975
+  topRefs avg=0.025
+     < 0.025
+```
+
+Changed with project lint, n = 3
+
+allInc is a noop
+
+```text
+allInc  | avg=939 stdev=51
+allRefs | avg=7037 stdev=61
+topRefs | avg=7012 stdev=213
+
+Dimension 0 diff vs allInc
+  allRefs avg=7.491
+     > 7.491
+  topRefs avg=7.465
+     > 7.465
+```
+
+### Takeaways
+
+- Linting each package separately is prohibitively slow in a large project. Incremental linting is alright, but the clean lint takes minutes.
+- Using lerna for incremental linting doesn't make sense, project references need to be used.
+
+## Test 8
+
+Same project size as previous test, but using a single top-level lint strategy:
+
+```js
+({
+  top: {
+    lintStrategy: 'top',
+    projectReferences: 'none',
+  },
+  topInc: {
+    lintStrategy: 'top',
+    projectReferences: 'incremental',
+  },
+});
+```
+
+First lint, n = 5
+
+```text
+top    | avg=32758 stdev=1111
+topInc | avg=39714 stdev=1064
+
+Dimension 0 diff vs top
+  topInc avg=1.212
+     > 1.212
+```
+
+Second lint, n = 5
+
+```text
+top    | avg=29937 stdev=1717
+topInc | avg=6230 stdev=28
+
+Dimension 0 diff vs top
+  topInc avg=0.208
+     < 0.208
+```
+
+Changed lint x2, n = 5
+
+```text
+top    | avg=61756 stdev=3562
+topInc | avg=17600 stdev=558
+
+Dimension 0 diff vs top
+  topInc avg=0.285
+     < 0.285
+```
+
+### Takeaways
+
+- Initial checking of the large 50x20 project is about 6x faster with incremental linting, and even faster without.
+- Incremental checks are also quite quick, but not as fast as with project references.
+
+### Open questions
+
+- How do project references compare to incremental top-level checks in watch mode?
+- Will a more complex dependency graph change the above conclusions?
