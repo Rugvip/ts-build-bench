@@ -184,8 +184,8 @@ async function applyBuildMode(buildMode, tr, { packages }) {
     await tr.modJson('package.json', (pkg) => {
       pkg.scripts.build = 'lerna run build:rollup';
     });
-    await tr.modJson('tsconfig.json', (pkg) => {
-      pkg.compilerOptions.module = 'ESNext';
+    await tr.modJson('tsconfig.base.json', (pkg) => {
+      pkg.compilerOptions.module = 'ES2015';
     });
 
     const rollupMode = buildMode.replace(/^rollup-/, '');
