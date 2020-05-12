@@ -6,7 +6,8 @@
     "bundle": "yarn workspace main bundle",
     "build": "lerna run build:tsc",
     "clean": "lerna run clean",
-    "lint": "lerna run lint"
+    "lint": "lerna run lint",
+    "lint:projects": "tsc -b tsconfig.json"
   },
   "workspaces": {
     "packages": [
