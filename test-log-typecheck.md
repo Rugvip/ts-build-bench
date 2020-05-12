@@ -665,3 +665,15 @@ Dimension 1 diff vs commonDep
 ### Takeaways
 
 - A more complex dependency graph doesn't seem to have a big impact on lint speed, except that lerna will be able to parallelize less.
+
+## Test 10
+
+Manual watch mode tests of topInc and topRefs with 100x20. Also doing another check in VSCode to make sure initial results still hold.
+
+VSCode seems the same as before, it takes 2.5-3s for updates to happen.
+
+Watch mode is tricky, the top-level single package watch mode seems way better than top-level watch mode with project references.
+
+Project references start up quicker if there are no changes, but it seems like it needs a full check when changes happen. Meaning it takes around 20s for a simple change in a package to appear in main. The same change takes about 3-4s when using the top-level watch mode.
+
+A benefit of project references is that it is possible to lint a single package in isolation. This provides a huge speed boost and linting is almost instant for local changes. The convenience of being able to spin up a single root task might outweight the benefit of this though.
