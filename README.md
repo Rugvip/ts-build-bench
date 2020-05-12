@@ -20,6 +20,24 @@ Out of esbuild and sucrase, esbuild is the faster one at the moment. It also pro
 
 It's also not worth generating type declarations as part of the build, or even type checking. It's faster to just let the build handle transpilation and bundling into js, and run tsc separately for type-checking and declaration file generation.
 
+Here are some rough numbers for a webpack build of a large project (100 packages, each with ~20 components/lib modules):
+
+```text
+ts-loader:        70s
+sucrase-loader:   24s
+esbuild-loader:   21s
+babel-loader:     86s
+```
+
+And for building a single one of those packages with different rollup plugins or tsc:
+
+```text
+tsc:                         11s
+rollup-plugin-typescript2:   22s
+@rollup/plugin-sucrase:      2.5s
+rollup-plugin-esbuild:       1.7s
+```
+
 ### Type Checking
 
 When linting each package separately, using TypeScript project references provide a significant speedup for large projects. The inital build in a clean state is slightly faster than without project references, maybe 5-10%, as long as lerna is used, and not `tsc --build`. For incremental checks and watch mode project references become a must. Incremental checks can end up taking minutes otherwise, and there's really no global watch mode with lerna.
@@ -37,15 +55,21 @@ In the end the single top-level config is likely the way to go, as a large proje
 
 ## Usage
 
-No real pattern here yet. Modify benchmark.js and run it:
+No real pattern here yet. Modify benchmarks and run them:
 
 ```bash
-node benchmark.js
+./benchmark-<x>
 ```
 
-If you give a number to benchmark.js, it will forward it as `count` to the benchmark function.
+If you give a number to benchmark, it will forward it as `count` to the benchmark function.
 
 Passing any of `inflate`, `prepare`, or `benchmark` will only run that part of the benchmark.
+
+For example, running the benchmark park of the build benchmark with 5 iterations:
+
+```bash
+./benchmark-build benchmark 5
+```
 
 To remove all projects in `workdir/`, run `./clean`.
 
