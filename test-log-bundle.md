@@ -657,3 +657,170 @@ Dimension 0 diff vs bundleTs
 ### Takeaways
 
 - Babel is definitely the slowest option, and sucrase/esbuild are surprisingly close, and they both provide a huge speedup.
+
+### Test 13
+
+Trying out different build strategies:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig(),
+  dimensions: [
+    {
+      buildTsc: {
+        buildMode: 'tsc',
+      },
+      buildSucrase: {
+        buildMode: 'rollup-sucrase',
+      },
+      buildTypescript: {
+        buildMode: 'rollup-typescript',
+      },
+      buildEsbuild: {
+        buildMode: 'rollup-esbuild',
+      },
+    },
+    {
+      small: {
+        packages: Array(4).fill(presets.packages.balanced(3)),
+      },
+      medium: {
+        packages: Array(4).fill(presets.packages.balanced(12)),
+      },
+      large: {
+        packages: Array(4).fill(presets.packages.balanced(24)),
+      },
+      huge: {
+        packages: Array(4).fill(presets.packages.balanced(36)),
+      },
+    },
+  ],
+});
+```
+
+Build, n = 3
+
+```text
+buildTsc
+  small  | avg=16342 stdev=503
+  medium | avg=16732 stdev=511
+  large  | avg=17678 stdev=167
+  huge   | avg=18889 stdev=1305
+buildSucrase
+  small  | avg=2820 stdev=379
+  medium | avg=3012 stdev=463
+  large  | avg=3210 stdev=231
+  huge   | avg=3589 stdev=191
+buildTypescript
+  small  | avg=9153 stdev=265
+  medium | avg=18998 stdev=188
+  large  | avg=31962 stdev=1021
+  huge   | avg=41964 stdev=794
+buildEsbuild
+  small  | avg=1876 stdev=261
+  medium | avg=1929 stdev=255
+  large  | avg=2279 stdev=162
+  huge   | avg=2723 stdev=179
+
+Dimension 0 diff vs buildTsc
+  buildSucrase avg=0.181
+    small  < 0.173
+    medium < 0.180
+    large  < 0.182
+    huge   < 0.190
+  buildTypescript avg=1.431
+    small  < 0.560
+    medium > 1.135
+    large  > 1.808
+    huge   > 2.222
+  buildEsbuild avg=0.126
+    small  < 0.115
+    medium < 0.115
+    large  < 0.129
+    huge   < 0.144
+
+Dimension 1 diff vs small
+  medium avg=1.299
+    buildTsc        ~ 1.024
+    buildSucrase    ~ 1.068
+    buildTypescript > 2.076
+    buildEsbuild    ~ 1.029
+  large avg=1.732
+    buildTsc        ~ 1.082
+    buildSucrase    > 1.139
+    buildTypescript > 3.492
+    buildEsbuild    > 1.215
+  huge avg=2.116
+    buildTsc        > 1.156
+    buildSucrase    > 1.273
+    buildTypescript > 4.585
+    buildEsbuild    > 1.452
+```
+
+With a single package:
+
+Build, n = 3
+
+```text
+buildTsc
+  small  | avg=10667 stdev=716
+  medium | avg=10330 stdev=553
+  large  | avg=11135 stdev=253
+  huge   | avg=12612 stdev=277
+buildSucrase
+  small  | avg=2002 stdev=280
+  medium | avg=2258 stdev=200
+  large  | avg=2531 stdev=200
+  huge   | avg=2804 stdev=200
+buildTypescript
+  small  | avg=6407 stdev=500
+  medium | avg=13607 stdev=435
+  large  | avg=21632 stdev=729
+  huge   | avg=29139 stdev=1364
+buildEsbuild
+  small  | avg=1452 stdev=203
+  medium | avg=1577 stdev=182
+  large  | avg=1723 stdev=236
+  huge   | avg=1944 stdev=139
+
+Dimension 0 diff vs buildTsc
+  buildSucrase avg=0.214
+    small  < 0.188
+    medium < 0.219
+    large  < 0.227
+    huge   < 0.222
+  buildTypescript avg=1.543
+    small  < 0.601
+    medium > 1.317
+    large  > 1.943
+    huge   > 2.310
+  buildEsbuild avg=0.149
+    small  < 0.136
+    medium < 0.153
+    large  < 0.155
+    huge   < 0.154
+
+Dimension 1 diff vs small
+  medium avg=1.327
+    buildTsc        ~ 0.968
+    buildSucrase    > 1.128
+    buildTypescript > 2.124
+    buildEsbuild    ~ 1.086
+  large avg=1.718
+    buildTsc        ~ 1.044
+    buildSucrase    > 1.265
+    buildTypescript > 3.376
+    buildEsbuild    > 1.187
+  huge avg=2.118
+    buildTsc        > 1.182
+    buildSucrase    > 1.401
+    buildTypescript > 4.548
+    buildEsbuild    > 1.339
+```
+
+### Takeaways
+
+- All methods seem to benefit from similarly form parallelization, taking roughtly 50% more time to build 4 packages instead of 1.
+- Looks like tsc has a really high constant time, likely for type checking, but after that it's pretty fast. It probably scales way more with the number of dependencies compared to number of files processed.
+- The typescript plugin is slow af and scales steeply with the number of processed files.
+- Similar to bundling, esbuild is the fastest and sucrase comes in second. Both of them hardly scale with the size of the build, to the point where the overhead of calling yarn is the main time consumer.
