@@ -221,7 +221,7 @@ module.exports = function createProject({
   projectReferences = 'none', // incremental | enabled | spread-composite
   lintStrategy = 'all', // top | top-references
   buildMode = 'none', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
-  bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
+  bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | babel-transpile | esbuild-transpile | sucrase-fork
   bundleSourcemaps = true,
   commonDep = null,
 }) {

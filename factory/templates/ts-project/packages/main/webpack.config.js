@@ -60,6 +60,25 @@ if (MODE.startsWith('ts-fork')) {
     test: /\.tsx?$/,
     exclude: /node_modules/,
     loader: 'babel-loader',
+    options: {
+      presets: [
+        '@babel/react',
+        [
+          '@babel/env',
+          {
+            targets: {
+              chrome: 80,
+            },
+          },
+        ],
+        '@babel/typescript',
+      ],
+      plugins: [
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ],
+    },
   });
 } else if (MODE.startsWith('sucrase-fork')) {
   rules.push({
