@@ -6,13 +6,11 @@ const { printTimingSummary } = require('./stats');
 
 processRunner({
   matrix: createProjectMatrix({
-    baseConfig: presets.baseConfig({
-      packages: Array(5).fill(presets.packages.balanced(20)),
-    }),
+    baseConfig: presets.baseConfig(),
     dimensions: [
       {
-        allInc: {
-          lintStrategy: 'all',
+        topInc: {
+          lintStrategy: 'top',
           projectReferences: 'incremental',
         },
         allRefs: {
@@ -22,6 +20,16 @@ processRunner({
         topRefs: {
           lintStrategy: 'top-references',
           projectReferences: 'enabled',
+        },
+      },
+      {
+        commonDep: {
+          packages: Array(4).fill(presets.packages.balanced(20)),
+          commonDep: presets.packages.balanced(20),
+        },
+        noCommon: {
+          packages: Array(5).fill(presets.packages.balanced(20)),
+          commonDep: null,
         },
       },
     ],
@@ -35,7 +43,11 @@ processRunner({
       },
       async (runner, isLastRun) => {
         if (!isLastRun) {
-          await runner.runCmd('.', ['yarn', 'clean']);
+          if (runner.project.dir.includes('topInc')) {
+            await runner.runCmd('.', ['rm', '-r', 'types-cache']);
+          } else {
+            await runner.runCmd('.', ['yarn', 'clean']);
+          }
         }
       }
     );
@@ -46,7 +58,7 @@ processRunner({
     console.log('*** SECOND LINT TIMES ***');
     printTimingSummary(timings2);
 
-    const timings3 = await runner.time(count, async (runner) => {
+    const timings4 = await runner.time(count, async (runner) => {
       runner.runCmd('packages/pkg1/src/components/component-1', [
         'sed',
         '-i',
@@ -65,6 +77,6 @@ processRunner({
       await runner.runCmd('.', ['yarn', 'lint']);
     });
     console.log('*** CHANGED LINT TIMES ***');
-    printTimingSummary(timings3);
+    printTimingSummary(timings4);
   },
 });
