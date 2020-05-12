@@ -541,3 +541,127 @@ Dimension 0 diff vs top
 
 - How do project references compare to incremental top-level checks in watch mode?
 - Will a more complex dependency graph change the above conclusions?
+
+## Test 9
+
+Measuring impact of adding a common dependency:
+
+```js
+createProjectMatrix({
+  baseConfig: presets.baseConfig(),
+  dimensions: [
+    {
+      topInc: {
+        lintStrategy: 'top',
+        projectReferences: 'incremental',
+      },
+      allRefs: {
+        lintStrategy: 'all',
+        projectReferences: 'enabled',
+      },
+      topRefs: {
+        lintStrategy: 'top-references',
+        projectReferences: 'enabled',
+      },
+    },
+    {
+      commonDep: {
+        packages: Array(4).fill(presets.packages.balanced(20)),
+        commonDep: presets.packages.balanced(20),
+      },
+      noCommon: {
+        packages: Array(5).fill(presets.packages.balanced(20)),
+        commonDep: null,
+      },
+    },
+  ],
+});
+```
+
+First lint, n = 5
+
+```text
+topInc
+  commonDep | avg=13244 stdev=632
+  noCommon  | avg=13675 stdev=1811
+allRefs
+  commonDep | avg=37719 stdev=2988
+  noCommon  | avg=30204 stdev=1698
+topRefs
+  commonDep | avg=46720 stdev=1059
+  noCommon  | avg=44387 stdev=2521
+
+Dimension 0 diff vs topInc
+  allRefs avg=2.528
+    commonDep > 2.848
+    noCommon  > 2.209
+  topRefs avg=3.387
+    commonDep > 3.528
+    noCommon  > 3.246
+
+Dimension 1 diff vs commonDep
+  noCommon avg=0.928
+    topInc  ~ 1.033
+    allRefs < 0.801
+    topRefs ~ 0.950
+```
+
+Second lint, n = 5
+
+```text
+topInc
+  commonDep | avg=2917 stdev=176
+  noCommon  | avg=2601 stdev=30
+allRefs
+  commonDep | avg=8828 stdev=479
+  noCommon  | avg=8285 stdev=444
+topRefs
+  commonDep | avg=789 stdev=23
+  noCommon  | avg=724 stdev=12
+
+Dimension 0 diff vs topInc
+  allRefs avg=3.106
+    commonDep > 3.027
+    noCommon  > 3.185
+  topRefs avg=0.274
+    commonDep < 0.270
+    noCommon  < 0.278
+
+Dimension 1 diff vs commonDep
+  noCommon avg=0.916
+    topInc  < 0.892
+    allRefs ~ 0.938
+    topRefs ~ 0.917
+```
+
+Changed lint, n = 5
+
+```text
+topInc
+  commonDep | avg=7780 stdev=354
+  noCommon  | avg=7849 stdev=234
+allRefs
+  commonDep | avg=17178 stdev=563
+  noCommon  | avg=15429 stdev=757
+topRefs
+  commonDep | avg=6779 stdev=481
+  noCommon  | avg=6098 stdev=495
+
+Dimension 0 diff vs topInc
+  allRefs avg=2.087
+    commonDep > 2.208
+    noCommon  > 1.966
+  topRefs avg=0.824
+    commonDep < 0.871
+    noCommon  < 0.777
+
+Dimension 1 diff vs commonDep
+  noCommon avg=0.936
+    topInc  ~ 1.009
+    allRefs < 0.898
+    topRefs < 0.900
+```
+
+### Takeaways
+
+- A more complex dependency graph doesn't seem to have a big impact on lint speed, except that lerna will be able to parallelize less.
