@@ -3,29 +3,44 @@ const { resolve: resolvePath } = require('path');
 const Templater = require('./Templater');
 
 async function applyProjectReferences(type, tr, { packages }) {
-  if (!type) {
+  if (type === 'none') {
     return;
   }
 
-  await tr.modJson('tsconfig.json', (config) => {
-    config.compilerOptions.composite = true;
+  const spreadComposite = type === 'spread-composite';
+
+  await tr.modJson('tsconfig.base.json', (config) => {
     config.compilerOptions.noEmit = false;
     config.compilerOptions.emitDeclarationOnly = true;
+    if (!spreadComposite) {
+      config.compilerOptions.composite = true;
+    }
   });
 
-  if (type === 'root') {
-    await tr.modJson('tsconfig.json', (config) => {
-      config.references = packages.map((pkg) => ({
-        path: `./packages/${pkg.name}/tsconfig.build.json`,
-      }));
-    });
-  } else if (type === 'main') {
-    await tr.modJson('packages/main/tsconfig.build.json', (config) => {
-      config.references = packages.map((pkg) => ({
-        path: `../${pkg.name}/tsconfig.build.json`,
-      }));
-    });
-  }
+  await tr.modJson('tsconfig.json', (config) => {
+    config.compilerOptions.noEmit = false;
+    config.compilerOptions.emitDeclarationOnly = true;
+    config.compilerOptions.composite = true;
+    config.references = packages.map((pkg) => ({
+      path: `./packages/${pkg.name}/tsconfig.json`,
+    }));
+  });
+  await tr.modJson('packages/main/tsconfig.json', (config) => {
+    if (spreadComposite) {
+      config.compilerOptions.composite = true;
+    }
+    config.references = packages.map((pkg) => ({
+      path: `../${pkg.name}/tsconfig.json`,
+    }));
+  });
+  await tr.modJson('packages/main/tsconfig.build.json', (config) => {
+    if (spreadComposite) {
+      config.compilerOptions.composite = true;
+    }
+    config.references = packages.map((pkg) => ({
+      path: `../${pkg.name}/tsconfig.build.json`,
+    }));
+  });
 
   for (const { name } of packages) {
     tr.modJson(`packages/${name}/package.json`, (pkg) => {
@@ -33,6 +48,25 @@ async function applyProjectReferences(type, tr, { packages }) {
       if (pkg.types && pkg.types.startsWith('dist/')) {
         pkg.types = 'dist/src/index.d.ts';
       }
+    });
+    tr.modJson(`packages/${name}/tsconfig.json`, (config) => {
+      if (spreadComposite) {
+        config.compilerOptions.composite = true;
+      }
+    });
+  }
+}
+
+async function applyLintStrategy(lintStrategy, tr, { packages }) {
+  if (lintStrategy === 'all') {
+    return;
+  } else if (lintStrategy === 'top') {
+    tr.modJson(`package.json`, (pkg) => {
+      pkg.scripts.lint = 'tsc -p tsconfig.lint.json';
+    });
+  } else if (lintStrategy === 'top-references') {
+    tr.modJson(`package.json`, (pkg) => {
+      pkg.scripts.lint = 'tsc -b tsconfig.json';
     });
   }
 }
@@ -95,7 +129,8 @@ module.exports = function createProject({
   componentExports,
   packages,
   singlePackage = false,
-  projectReferences = null,
+  projectReferences = 'none', // enabled | spread-composite
+  lintStrategy = 'all', // top | top-references
   buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
   bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
   bundleSourcemaps = true,
@@ -191,6 +226,7 @@ module.exports = function createProject({
     }
 
     await applyProjectReferences(projectReferences, tr, { packages });
+    await applyLintStrategy(lintStrategy, tr, { packages });
     await applyBuildMode(buildMode, tr, { packages });
     await applyBundleMode(bundleMode, bundleSourcemaps, tr, { packages });
 
