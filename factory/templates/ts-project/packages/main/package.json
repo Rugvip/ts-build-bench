@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "bundle": "../../../../node_modules/.bin/webpack",
+    "clean": "rm -r dist",
     "lint": "tsc --project tsconfig.json"
   },
   "dependencies": {

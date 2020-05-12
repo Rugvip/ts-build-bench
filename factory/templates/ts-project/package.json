@@ -5,6 +5,7 @@
   "scripts": {
     "bundle": "yarn workspace main bundle",
     "build": "lerna run build:tsc",
+    "clean": "lerna run clean",
     "lint": "lerna run lint"
   },
   "workspaces": {
