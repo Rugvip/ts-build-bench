@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+const { createProjectMatrix, presets } = require('./factory');
+const { processRunner } = require('./runner');
+const { printTimingSummary } = require('./stats');
+
+processRunner({
+  matrix: createProjectMatrix({
+    baseConfig: presets.baseConfig({
+      packages: Array(50).fill(presets.packages.balanced(20)),
+      buildMode: 'none',
+    }),
+    dimensions: [
+      {
+        bundleTs: {
+          buildMode: 'tsc',
+        },
+        bundleSucrase: {
+          buildMode: 'rollup-sucrase',
+        },
+        bundleEsbuild: {
+          buildMode: 'rollup-typescript',
+        },
+        bundleEsbuild: {
+          buildMode: 'rollup-esbuild',
+        },
+      },
+    ],
+  }),
+  prepare: async (runner) => {},
+  benchmark: async (runner, count) => {
+    const timings = await runner.timeCmd({ cmd: ['yarn', 'build'], count });
+    console.log('*** BUILD TIMES ***');
+    printTimingSummary(timings);
+  },
+});
