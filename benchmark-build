@@ -6,23 +6,34 @@ const { printTimingSummary } = require('./stats');
 
 processRunner({
   matrix: createProjectMatrix({
-    baseConfig: presets.baseConfig({
-      packages: Array(50).fill(presets.packages.balanced(20)),
-      buildMode: 'none',
-    }),
+    baseConfig: presets.baseConfig(),
     dimensions: [
       {
-        bundleTs: {
+        buildTsc: {
           buildMode: 'tsc',
         },
-        bundleSucrase: {
+        buildSucrase: {
           buildMode: 'rollup-sucrase',
         },
-        bundleEsbuild: {
+        buildTypescript: {
           buildMode: 'rollup-typescript',
         },
-        bundleEsbuild: {
+        buildEsbuild: {
           buildMode: 'rollup-esbuild',
+        },
+      },
+      {
+        small: {
+          packages: Array(1).fill(presets.packages.balanced(3)),
+        },
+        medium: {
+          packages: Array(1).fill(presets.packages.balanced(12)),
+        },
+        large: {
+          packages: Array(1).fill(presets.packages.balanced(24)),
+        },
+        huge: {
+          packages: Array(1).fill(presets.packages.balanced(36)),
         },
       },
     ],
