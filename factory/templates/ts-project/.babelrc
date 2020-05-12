@@ -1,0 +1,14 @@
+{
+  "presets": [
+    "@babel/react",
+    [
+      "@babel/env",
+      {
+        "targets": {
+          "chrome": 80
+        }
+      }
+    ],
+    "@babel/typescript"
+  ]
+}

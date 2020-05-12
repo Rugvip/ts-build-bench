@@ -55,6 +55,12 @@ if (MODE.startsWith('ts-fork')) {
       transforms: ['typescript', 'jsx', 'imports'],
     },
   });
+} else if (MODE.startsWith('babel-transpile')) {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: 'babel-loader',
+  });
 } else if (MODE.startsWith('sucrase-fork')) {
   rules.push({
     test: /\.tsx?$/,
