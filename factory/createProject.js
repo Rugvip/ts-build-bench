@@ -22,9 +22,13 @@ async function applyProjectReferences(type, tr, { packages }) {
 
   await tr.modJson('tsconfig.json', (config) => {
     config.compilerOptions.composite = true;
-    config.references = packages.map((pkg) => ({
-      path: `./packages/${pkg.name}/tsconfig.json`,
-    }));
+    config.references = packages
+      .map((pkg) => ({
+        path: `./packages/${pkg.name}/tsconfig.json`,
+      }))
+      .concat({
+        path: './packages/main/tsconfig.json',
+      });
   });
   await tr.modJson('packages/main/tsconfig.json', (config) => {
     if (spreadComposite) {
