@@ -223,3 +223,56 @@ lintTopRefs with noRefs is a noop, ignore those values
 ### Takeaways
 
 - Incremental tsc is likely a given, remains to be seen if it's something we want to run in CI/CD or not. Skipping non-incremental for further tests.
+
+# Test 3
+
+Focusing in on incremental with just 1 3-part dimension:
+
+```js
+{
+        allInc: {
+          lintStrategy: 'all',
+          projectReferences: 'incremental',
+        },
+        allRefs: {
+          lintStrategy: 'all',
+          projectReferences: 'enabled',
+        },
+        topRefs: {
+          lintStrategy: 'top-references',
+          projectReferences: 'enabled',
+        },
+      }
+```
+
+First lint, n = 1
+
+```text
+allInc  | avg=31707 stdev=0
+allRefs | avg=26146 stdev=0
+topRefs | avg=43529 stdev=0
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.825
+     < 0.825
+  topRefs avg=1.373
+     > 1.373
+```
+
+Second lint, n = 5
+
+```text
+allInc  | avg=7793 stdev=486
+allRefs | avg=7000 stdev=88
+topRefs | avg=612 stdev=36
+
+Dimension 0 diff vs allInc
+  allRefs avg=0.898
+     < 0.898
+  topRefs avg=0.078
+     < 0.078
+```
+
+### Takeaways
+
+- Initial result is not reliable enough, need to figure out how to run that in a loop.

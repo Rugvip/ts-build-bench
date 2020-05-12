@@ -7,66 +7,33 @@ const { printTimingSummary } = require('./stats');
 processRunner({
   matrix: createProjectMatrix({
     baseConfig: presets.baseConfig({
-      packages: Array(10).fill(presets.packages.balanced(9)),
+      packages: Array(5).fill(presets.packages.balanced(20)),
     }),
     dimensions: [
       {
-        // buildTsc: {
-        //   buildMode: 'tsc',
-        // },
-        // buildRollupTs: {
-        //   buildMode: 'rollup-typescript',
-        // },
-        buildRollupSucrase: {
-          buildMode: 'rollup-sucrase',
+        allInc: {
+          lintStrategy: 'all',
+          projectReferences: 'incremental',
         },
-        buildNone: {
-          buildMode: 'none',
+        allRefs: {
+          lintStrategy: 'all',
+          projectReferences: 'enabled',
         },
-      },
-      {
-        bundleTsTranspile: {
-          bundleMode: 'ts-transpile',
-        },
-        bundleTsFork: {
-          bundleMode: 'ts-fork',
-        },
-        bundleSucrase: {
-          bundleMode: 'sucrase-transpile',
-        },
-        bundleSucraseFork: {
-          bundleMode: 'sucrase-fork',
-        },
-      },
-      {
-        withMap: {
-          bundleSourcemaps: true,
-        },
-        noMap: {
-          bundleSourcemaps: false,
+        topRefs: {
+          lintStrategy: 'top-references',
+          projectReferences: 'enabled',
         },
       },
     ],
   }),
-  prepare: async (runner) => {
-    const buildTimings = await runner.timeCmd({ cmd: ['yarn', 'build'] });
-    console.log('*** BUILD TIMES ***');
-    printTimingSummary(buildTimings);
-  },
+  prepare: async (runner) => {},
   benchmark: async (runner, count) => {
-    // const buildTimings = await runner.timeCmd({
-    //   cmd: ['yarn', 'main:build:tsc'],
-    //   count,
-    // });
-    // console.log('*** BUILD TIMES ***');
-    // printTimingSummary(buildTimings);
+    const timings1 = await runner.timeCmd({ cmd: ['yarn', 'lint'] });
+    console.log('*** FIRST LINT TIMES ***');
+    printTimingSummary(timings1);
 
-    const bundleTimings = await runner.timeCmd({
-      // path: 'packages/main',
-      cmd: ['yarn', 'bundle'],
-      count,
-    });
-    console.log('*** BUNDLE TIMES ***');
-    printTimingSummary(bundleTimings);
+    const timings2 = await runner.timeCmd({ cmd: ['yarn', 'lint'], count });
+    console.log('*** SECOND LINT TIMES ***');
+    printTimingSummary(timings2);
   },
 });
