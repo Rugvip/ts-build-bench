@@ -5,21 +5,22 @@ const Templater = require('./Templater');
 async function applyProjectReferences(type, tr, { packages }) {
   if (type === 'none') {
     return;
+  } else if (type === 'incremental') {
+    await tr.modJson('tsconfig.base.json', (config) => {
+      config.compilerOptions.incremental = true;
+    });
+    return;
   }
 
   const spreadComposite = type === 'spread-composite';
 
   await tr.modJson('tsconfig.base.json', (config) => {
-    config.compilerOptions.noEmit = false;
-    config.compilerOptions.emitDeclarationOnly = true;
     if (!spreadComposite) {
       config.compilerOptions.composite = true;
     }
   });
 
   await tr.modJson('tsconfig.json', (config) => {
-    config.compilerOptions.noEmit = false;
-    config.compilerOptions.emitDeclarationOnly = true;
     config.compilerOptions.composite = true;
     config.references = packages.map((pkg) => ({
       path: `./packages/${pkg.name}/tsconfig.json`,
@@ -129,7 +130,7 @@ module.exports = function createProject({
   componentExports,
   packages,
   singlePackage = false,
-  projectReferences = 'none', // enabled | spread-composite
+  projectReferences = 'none', // incremental | enabled | spread-composite
   lintStrategy = 'all', // top | top-references
   buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
   bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork

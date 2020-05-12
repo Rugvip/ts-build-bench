@@ -1,5 +1,8 @@
 {
   "files": [],
-  "compilerOptions": {},
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  },
   "references": [{}]
 }
