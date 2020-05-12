@@ -46,6 +46,16 @@ The above applies to if you want each package to have separate configuration tho
 
 In the end the single top-level config is likely the way to go, as a large project with project references can be prohibitively slow, taking many minutes to lint on the initial run, and tens of seconds to act on changes in watch mode.
 
+Some rough numbers for type-checking a project relatively large project (100 packages, each with ~20 components/lib moduels):
+
+```text
+separate tsc of each package:                            231s
+separate tsc of each package, with project references:   225s
+tsc --build mode referencing all packages:               375s
+single top-level tsc pointing to all packages:           33s
+single top-level tsc incremental build:                  40s
+```
+
 ## Project Layout
 
 - factory/ - Tools for creating projects of various size and configurations.
