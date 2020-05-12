@@ -95,6 +95,90 @@ async function switchToSinglePackage(tr, { packages }) {
   });
 }
 
+async function createCommonDependency(
+  { libs, components },
+  tr,
+  { packages, projectReferences, singlePackage, buildMode, componentExports }
+) {
+  if (buildMode !== 'none') {
+    throw new Error(
+      `common dep is not compatible with build mode ${buildMode}`
+    );
+  }
+  if (singlePackage) {
+    throw new Error('common dep is not compatible with single package mode');
+  }
+  if (
+    projectReferences === 'enabled' ||
+    projectReferences === 'spread-composite'
+  ) {
+    for (const { name } of packages) {
+      await tr.modJson(`packages/${name}/tsconfig.json`, (config) => {
+        if (projectReferences === 'spread-composite') {
+          config.compilerOptions.references = [{ path: '../packages/common' }];
+        }
+      });
+    }
+
+    await tr.modJson('tsconfig.json', (config) => {
+      config.references.push({
+        path: './packages/common/tsconfig.json',
+      });
+    });
+  }
+
+  // Add as dep to all packages
+  for (const { name } of packages) {
+    await tr.modJson(`packages/${name}/package.json`, (pkg) => {
+      pkg.dependencies['@internal/common'] = '0.0.0';
+    });
+
+    const importAndUseDep =
+      "import {lib1} from '@internal/common'\nlib1.export1func()";
+    await tr.addLine(`packages/${name}/src/index.ts`, importAndUseDep);
+  }
+
+  await tr.hydrate({
+    name: 'ts-package',
+    path: `packages/common`,
+    data: {
+      name: `@internal/common`,
+      main: 'src/index.ts',
+      types: 'src/index.ts',
+    },
+  });
+
+  for (const [index, lib] of libs.entries()) {
+    const n = index + 1;
+    await tr.hydrate({
+      name: `ts-lib-${lib}`,
+      path: `packages/common/src/lib/lib-${n}`,
+    });
+
+    await tr.addLine(
+      `packages/common/src/lib/index.ts`,
+      `import * as lib${n} from './lib-${n}';\nexport { lib${n} };`
+    );
+  }
+
+  for (const [index, component] of components.entries()) {
+    const n = index + 1;
+    await tr.hydrate({
+      name: `ts-component-${component}`,
+      path: `packages/common/src/components/component-${n}`,
+      data: {
+        export: componentExports === 'default' ? 'default' : `Component${n}`,
+      },
+    });
+
+    const exportLine =
+      componentExports === 'default'
+        ? `export { default as Component${n} } from './component-${n}';`
+        : `export * from './component-${n}';`;
+    await tr.addLine(`packages/common/src/components/index.ts`, exportLine);
+  }
+}
+
 async function applyBuildMode(buildMode, tr, { packages }) {
   if (buildMode.startsWith('rollup-')) {
     await tr.modJson('package.json', (pkg) => {
@@ -136,9 +220,10 @@ module.exports = function createProject({
   singlePackage = false,
   projectReferences = 'none', // incremental | enabled | spread-composite
   lintStrategy = 'all', // top | top-references
-  buildMode = 'tsc', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
+  buildMode = 'none', // tsc | rollup-sucrase | rollup-typescript | rollup-esbuild | none
   bundleMode = 'ts-fork', // ts-fork | ts-transpile | sucrase-transpile | sucrase-fork
   bundleSourcemaps = true,
+  commonDep = null,
 }) {
   const dir = resolvePath(projectPath);
   packages = packages.map((pkg, index) => ({
@@ -237,6 +322,16 @@ module.exports = function createProject({
 
     if (singlePackage) {
       await switchToSinglePackage(tr, { dir, packages });
+    }
+    if (commonDep) {
+      await createCommonDependency(commonDep, tr, {
+        packages,
+        projectReferences,
+        singlePackage,
+        lintStrategy,
+        buildMode,
+        componentExports,
+      });
     }
   };
 
