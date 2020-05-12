@@ -31,8 +31,8 @@ if (MODE === 'typescript') {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
     }),
     esbuild({
-      watch: process.argv.includes('--watch'),
-      minify: true,
+      watch: false,
+      minify: false,
       target: 'es2019',
       jsxFactory: 'React.createElement',
       jsxFragment: 'React.Fragment',
