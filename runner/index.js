@@ -71,6 +71,30 @@ class MatrixRunner {
     await Promise.all(this.runners.map((r) => r.runCmd(path, cmd)));
   }
 
+  async time(count, func, cleanup) {
+    const times = {};
+
+    for (let i = 0; i < count; i++) {
+      for (const [index, r] of this.runners.entries()) {
+        const dir = this.dirs[index];
+
+        const start = Date.now();
+        await func(r);
+        const time = Date.now() - start;
+        console.log(`Run in ${dir} took ${time}ms`);
+
+        if (cleanup) {
+          await cleanup(r);
+        }
+
+        times[dir] = times[dir] || [];
+        times[dir].push(time);
+      }
+    }
+
+    return times;
+  }
+
   async timeCmd({ path = '.', cmd, count }) {
     const times = {};
 

@@ -28,9 +28,19 @@ processRunner({
   }),
   prepare: async (runner) => {},
   benchmark: async (runner, count) => {
-    const timings1 = await runner.timeCmd({ cmd: ['yarn', 'lint'] });
+    const timings1 = await runner.time(
+      count,
+      async (runner) => {
+        await runner.runCmd('.', ['yarn', 'lint']);
+      },
+      async (runner) => {
+        await runner.runCmd('.', ['yarn', 'clean']);
+      }
+    );
     console.log('*** FIRST LINT TIMES ***');
     printTimingSummary(timings1);
+
+    await runner.runCmd('.', ['yarn', 'lint']);
 
     const timings2 = await runner.timeCmd({ cmd: ['yarn', 'lint'], count });
     console.log('*** SECOND LINT TIMES ***');
