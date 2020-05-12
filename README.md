@@ -22,3 +22,11 @@ If you give a number to benchmark.js, it will forward it as `count` to the bench
 Passing any of `inflate`, `prepare`, or `benchmark` will only run that part of the benchmark.
 
 To remove all projects in `workdir/`, run `./clean`.
+
+## Test logs
+
+These are some written logs of different benchmarks run in this repo:
+
+- VSCode Performance: [test-log-vscode.md](./test-log-vscode.md)
+- Building and Bundling: [test-log-bundle.md](./test-log-bundle.md)
+- Type Checking with tsc: [test-log-typecheck.md](./test-log-typecheck.md)
