@@ -6,7 +6,9 @@ const { printTimingSummary } = require('./stats');
 
 processRunner({
   matrix: createProjectMatrix({
-    baseConfig: presets.baseConfig(),
+    baseConfig: presets.baseConfig({
+      packages: Array(100).fill(presets.packages.balanced(20)),
+    }),
     dimensions: [
       {
         topInc: {
@@ -20,16 +22,6 @@ processRunner({
         topRefs: {
           lintStrategy: 'top-references',
           projectReferences: 'enabled',
-        },
-      },
-      {
-        commonDep: {
-          packages: Array(4).fill(presets.packages.balanced(20)),
-          commonDep: presets.packages.balanced(20),
-        },
-        noCommon: {
-          packages: Array(5).fill(presets.packages.balanced(20)),
-          commonDep: null,
         },
       },
     ],
