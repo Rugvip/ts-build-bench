@@ -6,6 +6,8 @@ Benchmarking different build setups for TypeScript web projects
 
 The tests where carried out with a large https://github.com/spotify/backstage project in mind. That is, a monorepo with a large number of stand-alone packages that are depended on by a single package.
 
+Versions used for these tests were recent versions of Webpack 4, Typescript 3.9, Rollup 2, and Babel 7.
+
 ### VSCode Performance
 
 There's not much to do to improve performance here. Using a single package is roughly the same speed as using a monorepo. Pre-building packages in a monorepo and pointing `package.json` `types` to `dist/index.d.ts` can give you a performance boost of maybe 20-30%, but it's likely not worth the tradeoff of having to keep those up to date.
