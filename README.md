@@ -4,7 +4,7 @@ Benchmarking different build setups for TypeScript web projects
 
 ## Conclusions (TL;RD of test logs)
 
-The tests where carried out with a large https://github.com/spotify/backstage project in mind. That is, a monorepo with a large number of stand-alone packages that are depended on by a single package.
+The tests were carried out with a large https://github.com/spotify/backstage project in mind. That is, a monorepo with a large number of stand-alone packages that are depended on by a single package.
 
 Versions used for these tests were recent versions of Webpack 4, Typescript 3.9, Rollup 2, and Babel 7.
 
@@ -42,13 +42,13 @@ rollup-plugin-esbuild:       1.7s
 
 ### Type Checking
 
-When linting each package separately, using TypeScript project references provide a significant speedup for large projects. The inital build in a clean state is slightly faster than without project references, maybe 5-10%, as long as lerna is used, and not `tsc --build`. For incremental checks and watch mode project references become a must. Incremental checks can end up taking minutes otherwise, and there's really no global watch mode with lerna.
+When linting each package separately, using TypeScript project references provide a significant speedup for large projects. The initial build in a clean state is slightly faster than without project references, maybe 5-10%, as long as lerna is used, and not `tsc --build`. For incremental checks and watch mode project references become a must. Incremental checks can end up taking minutes otherwise, and there's really no global watch mode with lerna.
 
 The above applies to if you want each package to have separate configuration though. The quickest way to do type checking, by an order of magnitude, is to have a single config file that points to all source code. This will however ignore any local tsconfig in the packages, and also require post-processing to move declarations files into `dist` folders before publishing. There doesn't seem to be an option to combine the speed of this approach with the change detection and convenience of project references.
 
 In the end the single top-level config is likely the way to go, as a large project with project references can be prohibitively slow, taking many minutes to lint on the initial run, and tens of seconds to act on changes in watch mode.
 
-Some rough numbers for type-checking a project relatively large project (100 packages, each with ~20 components/lib moduels):
+Some rough numbers for type-checking a project relatively large project (100 packages, each with ~20 components/lib modules):
 
 ```text
 separate tsc of each package:                            231s
