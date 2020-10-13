@@ -55,23 +55,40 @@ if (MODE.startsWith('ts-fork')) {
       transforms: ['typescript', 'jsx', 'imports'],
     },
   });
-} else if (MODE.startsWith('babel-transpile')) {
+} else if (MODE.startsWith('sucrase-transpile-split')) {
+  rules.push({
+    test: /\.ts$/,
+    exclude: /node_modules/,
+    loader: '@sucrase/webpack-loader',
+    options: {
+      transforms: ['typescript', 'imports'],
+    },
+  });
+  rules.push({
+    test: /\.tsx$/,
+    exclude: /node_modules/,
+    loader: '@sucrase/webpack-loader',
+    options: {
+      transforms: ['typescript', 'jsx', 'imports'],
+    },
+  });
+} else if (MODE.startsWith('babel-standard')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
     loader: 'babel-loader',
     options: {
       presets: [
-        '@babel/react',
+        '@babel/preset-react',
+        '@babel/preset-typescript',
         [
           '@babel/env',
           {
             targets: {
-              chrome: 80,
+              chrome: 85,
             },
           },
         ],
-        '@babel/typescript',
       ],
       plugins: [
         '@babel/plugin-proposal-class-properties',
@@ -80,14 +97,112 @@ if (MODE.startsWith('ts-fork')) {
       ],
     },
   });
-} else if (MODE.startsWith('sucrase-fork')) {
+} else if (MODE.startsWith('babel-cache')) {
   rules.push({
     test: /\.tsx?$/,
     exclude: /node_modules/,
-    loader: '@sucrase/webpack-loader',
+    loader: 'babel-loader',
     options: {
-      transforms: ['typescript', 'jsx', 'imports'],
+      cacheDirectory: true,
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-typescript',
+        [
+          '@babel/env',
+          {
+            targets: {
+              chrome: 85,
+            },
+          },
+        ],
+      ],
+      plugins: [
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ],
     },
+  });
+} else if (MODE.startsWith('babel-split')) {
+  rules.push({
+    test: /\.ts$/,
+    exclude: /node_modules/,
+    loader: 'babel-loader',
+    options: {
+      presets: [
+        '@babel/preset-typescript',
+        [
+          '@babel/env',
+          {
+            targets: {
+              chrome: 85,
+            },
+          },
+        ],
+      ],
+      plugins: [
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ],
+    },
+  });
+  rules.push({
+    test: /\.tsx$/,
+    exclude: /node_modules/,
+    loader: 'babel-loader',
+    options: {
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-typescript',
+        [
+          '@babel/env',
+          {
+            targets: {
+              chrome: 85,
+            },
+          },
+        ],
+      ],
+      plugins: [
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ],
+    },
+  });
+} else if (MODE.startsWith('babel-bugfix')) {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: 'babel-loader',
+    options: {
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-typescript',
+        [
+          '@babel/env',
+          {
+            bugfix: true,
+            targets: {
+              chrome: 85,
+            },
+          },
+        ],
+      ],
+      plugins: [
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ],
+    },
+  });
+} else if (MODE.startsWith('swc-transpile')) {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: 'swc-loader',
+    options: {},
   });
   plugins.push(new ForkTsCheckerWebpackPlugin());
 } else {

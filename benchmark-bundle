@@ -7,28 +7,50 @@ const { printTimingSummary } = require('./stats');
 processRunner({
   matrix: createProjectMatrix({
     baseConfig: presets.baseConfig({
-      packages: Array(100).fill(presets.packages.balanced(20)),
+      packages: Array(50).fill(presets.packages.balanced(20)),
       buildMode: 'none',
     }),
     dimensions: [
       {
-        bundleTs: {
-          bundleMode: 'ts-transpile',
-        },
+        // bundleTs: {
+        //   bundleMode: 'ts-transpile',
+        // },
         bundleSucrase: {
           bundleMode: 'sucrase-transpile',
         },
-        bundleEsbuild: {
-          bundleMode: 'esbuild-transpile',
+        // bundleSucraseSplit: {
+        //   bundleMode: 'sucrase-transpile-split',
+        // },
+        // bundleEsbuild: {
+        //   bundleMode: 'esbuild-transpile',
+        // },
+        bundleBabelStandard: {
+          bundleMode: 'babel-standard',
         },
-        bundleBabel: {
-          bundleMode: 'babel-transpile',
+        bundleBabelCache: {
+          bundleMode: 'babel-cache',
         },
+        // bundleBabelSplit: {
+        //   bundleMode: 'babel-split',
+        // },
+        // bundleBabelBugfix: {
+        //   bundleMode: 'babel-bugfix',
+        // },
+        // bundleSwc: {
+        //   bundleMode: 'swc-transpile',
+        // },
       },
     ],
   }),
   prepare: async (runner) => {},
   benchmark: async (runner, count) => {
+    const initialTimings = await runner.timeCmd({
+      cmd: ['yarn', 'bundle'],
+      count: 1,
+    });
+    console.log('*** INITIAL BUNDLE TIMES ***');
+    printTimingSummary(initialTimings);
+
     const timings = await runner.timeCmd({ cmd: ['yarn', 'bundle'], count });
     console.log('*** BUNDLE TIMES ***');
     printTimingSummary(timings);

@@ -7,7 +7,7 @@ const { printTimingSummary } = require('./stats');
 processRunner({
   matrix: createProjectMatrix({
     baseConfig: presets.baseConfig({
-      packages: Array(100).fill(presets.packages.balanced(20)),
+      packages: Array(10).fill(presets.packages.balanced(20)),
     }),
     dimensions: [
       {
