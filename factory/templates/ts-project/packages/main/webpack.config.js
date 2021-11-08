@@ -204,7 +204,6 @@ if (MODE.startsWith('ts-fork')) {
     loader: 'swc-loader',
     options: {},
   });
-  plugins.push(new ForkTsCheckerWebpackPlugin());
 } else {
   throw new Error('Invalid Webpack Mode');
 }
