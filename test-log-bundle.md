@@ -38,7 +38,8 @@ createProjectMatrix({
 
 ## Test 1
 
-This run was done before fixing the include patterns of the Webpack loaders to only process ts files.
+This run was done before fixing the include patterns of the Webpack loaders to
+only process ts files.
 
 Build, n = 1
 
@@ -102,12 +103,17 @@ Dimension 1
 
 ### Takeaways
 
-- Sucrase many times faster than ts-fork, even for small projects. But ofc doesn't do any type checking.
-- There's no difference in bundle time across different build methods when all files are processed by the loader.
+- Sucrase many times faster than ts-fork, even for small projects. But ofc
+  doesn't do any type checking.
+- There's no difference in bundle time across different build methods when all
+  files are processed by the loader.
 
 ## Test 2
 
-This run updated the webpack bundlers to only process TypeScript files, so any method that builds packages ahead of time into JS might get more of a speedup now. It also adds ts-transpile as a bundle strategy, which simply removes the ts fork plugin, giving a more for comparison to sucrase.
+This run updated the webpack bundlers to only process TypeScript files, so any
+method that builds packages ahead of time into JS might get more of a speedup
+now. It also adds ts-transpile as a bundle strategy, which simply removes the ts
+fork plugin, giving a more for comparison to sucrase.
 
 The project size was reduced a bit for this run:
 
@@ -195,12 +201,16 @@ Dimension 1
 
 ### Takeaways
 
-- Sucrase is faster than transpileOnly ts-loader, but the difference is much smaller, at least in a small project.
-- With typechecking the build method doesn't matter much, but pre-building packages is somewhat faster when using transpileOnly. No big difference for sucrase though.
+- Sucrase is faster than transpileOnly ts-loader, but the difference is much
+  smaller, at least in a small project.
+- With typechecking the build method doesn't matter much, but pre-building
+  packages is somewhat faster when using transpileOnly. No big difference for
+  sucrase though.
 
 ## Test 3
 
-Another run of the same, small project. Removing tsc and rollupTs build methods, as those are pretty much the same as rollupSucrase but much slower to test.
+Another run of the same, small project. Removing tsc and rollupTs build methods,
+as those are pretty much the same as rollupSucrase but much slower to test.
 
 Bundle, n = 10
 
@@ -268,20 +278,32 @@ Dimension 1
 
 ### Takeaways
 
-- Pre-built deps is ~3x faster for transpileOnly, and ~2x faster for sucrase, but only about 25% faster for typechecked builds.
-- For non-prebuilt projects, sucrase is ~3x faster than transpileOnly, but transpile with typechecks is only about 25% slower than transpileOnly.
+- Pre-built deps is ~3x faster for transpileOnly, and ~2x faster for sucrase,
+  but only about 25% faster for typechecked builds.
+- For non-prebuilt projects, sucrase is ~3x faster than transpileOnly, but
+  transpile with typechecks is only about 25% slower than transpileOnly.
 - For local development, given the above:
-  - If type checking is desired as a part of the bundler, just use ts-loader with the fork plugin.
-  - If type checking isn't needed, you can get a significant speedup, ~3x, by using sucrase.
-- For production deployments, given the above, and that we don't want to use sucrase for the production build (?), and we have the option if building all dependencies first if needed.
-  - If we do type checking during bundling, then it doesn't seem to make sense to build packages separately first, as we only get about 25% speedup doing that.
-  - If we don't type check during bundling, we might want to build packages separately first and cache them, as that gives a ~3x speed increase.
-  - Needs a separate comparison between using the fork plugin and completely separate tsc run.
+  - If type checking is desired as a part of the bundler, just use ts-loader
+    with the fork plugin.
+  - If type checking isn't needed, you can get a significant speedup, ~3x, by
+    using sucrase.
+- For production deployments, given the above, and that we don't want to use
+  sucrase for the production build (?), and we have the option if building all
+  dependencies first if needed.
+  - If we do type checking during bundling, then it doesn't seem to make sense
+    to build packages separately first, as we only get about 25% speedup doing
+    that.
+  - If we don't type check during bundling, we might want to build packages
+    separately first and cache them, as that gives a ~3x speed increase.
+  - Needs a separate comparison between using the fork plugin and completely
+    separate tsc run.
 
 ### Open questions
 
-- Can we use sucrase with the ts-fork plugin? So we can get both the sucrase speedup but also async type feedback.
-- Should we do type checks as a part of the bundling, or leave that as a separate step?
+- Can we use sucrase with the ts-fork plugin? So we can get both the sucrase
+  speedup but also async type feedback.
+- Should we do type checks as a part of the bundling, or leave that as a
+  separate step?
 - Does adding source maps affect the results?
 
 ## Test 5
@@ -312,11 +334,15 @@ Dimension 1
 
 ### Takeaways
 
-- Using sucrase + ts-fork checker plugin seems to work just fine, but will also need to try it out in a dev server. Using sucrase will give us the benefit of very quick updates and bootup times, and with the ts-fork plugin we still get type checking in the terminal.
+- Using sucrase + ts-fork checker plugin seems to work just fine, but will also
+  need to try it out in a dev server. Using sucrase will give us the benefit of
+  very quick updates and bootup times, and with the ts-fork plugin we still get
+  type checking in the terminal.
 
 ## Test 6
 
-Trying out impact of enabling sourcemaps, with a slightly smaller project than last time
+Trying out impact of enabling sourcemaps, with a slightly smaller project than
+last time
 
 ```js
 Array(5).fill(presets.packages.balanced(9));
@@ -348,7 +374,8 @@ Dimension 2
 
 ### Takeaways
 
-- Sourcemaps cheap-module-eval-source-map don't seem to slow down the build at all, will keep them on by default for now. Who doesn't want sourcemaps.
+- Sourcemaps cheap-module-eval-source-map don't seem to slow down the build at
+  all, will keep them on by default for now. Who doesn't want sourcemaps.
 
 ## Failed attempts
 
@@ -384,7 +411,8 @@ createProjectMatrix({
 });
 ```
 
-The main thing we're looking at is the difference in build time. Also got new fancy stats output now:
+The main thing we're looking at is the difference in build time. Also got new
+fancy stats output now:
 
 Build, n = 1
 
@@ -423,14 +451,23 @@ Dimension 0 diff vs buildRollupEsbuild
 
 ### Takeaways
 
-- The esbuild plugin for rollup is faster than sucrase, by about ~45%. It also produces output that is ~25% faster to process in the webpack step.
-- A major issue with esbuild is it's lack of configurability, but by using it as a rollup plugin we hopefully get around that.
-- It would be a lot better if we could get the esbuild plugin for webpack to work as well. So that we're using the same processor in both rollup and webpack.
-- esbuild is so quick that it might be worth building packages separately for the webpack production build, and then just using ts-loader with transpileOnly, since the speed gained from using sucrase there would not be worth the risk of things breaking. With that setup we would end up with esbuild + ts-loader for prod builds, and sucrase for dev builds.
+- The esbuild plugin for rollup is faster than sucrase, by about ~45%. It also
+  produces output that is ~25% faster to process in the webpack step.
+- A major issue with esbuild is it's lack of configurability, but by using it as
+  a rollup plugin we hopefully get around that.
+- It would be a lot better if we could get the esbuild plugin for webpack to
+  work as well. So that we're using the same processor in both rollup and
+  webpack.
+- esbuild is so quick that it might be worth building packages separately for
+  the webpack production build, and then just using ts-loader with
+  transpileOnly, since the speed gained from using sucrase there would not be
+  worth the risk of things breaking. With that setup we would end up with
+  esbuild + ts-loader for prod builds, and sucrase for dev builds.
 
 ## Test 8
 
-Got esbuild-loader working for webpack, so trying it out vs sucrase and ts-transpile in a small build:
+Got esbuild-loader working for webpack, so trying it out vs sucrase and
+ts-transpile in a small build:
 
 ```js
 createProjectMatrix({
@@ -503,7 +540,10 @@ Dimension 1 diff vs bundleTsTranspile
 
 ### Takeaways
 
-- esbuild isn't a lot faster than sucrase as a webpack loader, at least not for this small project. Given that it produces better output for rollup builds, and it'd be better to have uniform builds, it's probably the best option for use across the board.
+- esbuild isn't a lot faster than sucrase as a webpack loader, at least not for
+  this small project. Given that it produces better output for rollup builds,
+  and it'd be better to have uniform builds, it's probably the best option for
+  use across the board.
 
 ## Test 9
 
@@ -548,17 +588,31 @@ Dimension 0 diff vs buildRollupEsbuild
 
 ### Takeaways
 
-- Building all packages with rollup is twice as slow as just building directly with esbuild. And the final build speed is only ~2.3x as fast. Building just a few packages is much faster though, so package dist caching could speed up production builds a bit. It's likely not worth the complexity though, since a full bundling of a full production build is just 16s anyway.
+- Building all packages with rollup is twice as slow as just building directly
+  with esbuild. And the final build speed is only ~2.3x as fast. Building just a
+  few packages is much faster though, so package dist caching could speed up
+  production builds a bit. It's likely not worth the complexity though, since a
+  full bundling of a full production build is just 16s anyway.
 
 ## Bonus Test
 
-Tried out esbuild in a large internal project using any concievable syntax combination from TypeScript. Webpack had to be bumped to a newer minor version to support the syntax output by esbuild-loader. There's also a lot of .js files with JSX in the project, which isn't configurable in the esbuild module, although it is configurable in the commandline, so had to modify the dep in node_modules.
+Tried out esbuild in a large internal project using any concievable syntax
+combination from TypeScript. Webpack had to be bumped to a newer minor version
+to support the syntax output by esbuild-loader. There's also a lot of .js files
+with JSX in the project, which isn't configurable in the esbuild module,
+although it is configurable in the commandline, so had to modify the dep in
+node_modules.
 
-With those fixes in place the project built fine, and with a significant speedup from babel. I couldn't do any real comparisons because the origininal build broke when bumping webpack. The unminified output was ~10% larger, and I didn't try out minification yet. One downside that was found is that chunk names were lost.
+With those fixes in place the project built fine, and with a significant speedup
+from babel. I couldn't do any real comparisons because the origininal build
+broke when bumping webpack. The unminified output was ~10% larger, and I didn't
+try out minification yet. One downside that was found is that chunk names were
+lost.
 
 ## Test 10
 
-Going with the bundle everything approach, trying out different transpilers for typescript.
+Going with the bundle everything approach, trying out different transpilers for
+typescript.
 
 Initial test in a small project:
 
@@ -606,7 +660,8 @@ Dimension 0 diff vs bundleTs
 
 ### Takeaways
 
-- In a pretty small project babel seems slightly worse than using ts-loader. It also requires a bunch of extra plugins to support the latest features.
+- In a pretty small project babel seems slightly worse than using ts-loader. It
+  also requires a bunch of extra plugins to support the latest features.
 
 ## Test 11
 
@@ -656,7 +711,8 @@ Dimension 0 diff vs bundleTs
 
 ### Takeaways
 
-- Babel is definitely the slowest option, and sucrase/esbuild are surprisingly close, and they both provide a huge speedup.
+- Babel is definitely the slowest option, and sucrase/esbuild are surprisingly
+  close, and they both provide a huge speedup.
 
 ### Test 13
 
@@ -820,7 +876,43 @@ Dimension 1 diff vs small
 
 ### Takeaways
 
-- All methods seem to benefit from similarly form parallelization, taking roughtly 50% more time to build 4 packages instead of 1.
-- Looks like tsc has a really high constant time, likely for type checking, but after that it's pretty fast. It probably scales way more with the number of dependencies compared to number of files processed.
-- The typescript plugin is slow af and scales steeply with the number of processed files.
-- Similar to bundling, esbuild is the fastest and sucrase comes in second. Both of them hardly scale with the size of the build, to the point where the overhead of calling yarn is the main time consumer.
+- All methods seem to benefit from similarly form parallelization, taking
+  roughtly 50% more time to build 4 packages instead of 1.
+- Looks like tsc has a really high constant time, likely for type checking, but
+  after that it's pretty fast. It probably scales way more with the number of
+  dependencies compared to number of files processed.
+- The typescript plugin is slow af and scales steeply with the number of
+  processed files.
+- Similar to bundling, esbuild is the fastest and sucrase comes in second. Both
+  of them hardly scale with the size of the build, to the point where the
+  overhead of calling yarn is the main time consumer.
+
+## Test 14
+
+More recent test with esbuild/sucrase/swc loaders, n=5
+
+```js
+baseConfig: presets.baseConfig({
+  packages: Array(50).fill(presets.packages.balanced(20)),
+  buildMode: 'none',
+}),
+```
+
+```text
+bundleSucrase | avg=15785 stdev=775
+bundleEsbuild | avg=13767 stdev=285
+bundleSwc     | avg=17254 stdev=902
+
+Dimension 0 diff vs bundleSucrase
+  bundleEsbuild avg=0.872
+     < 0.872
+  bundleSwc avg=1.093
+     ~ 1.093
+```
+
+### Takeaways
+
+- ESBuild is still clearly ahead by quite a bit, especially when you consider
+  the baseline webpack overhead.
+- Sucrase is only slightly faster than SWC, which likely makes SWC the better
+  choice since it has a larger community and usage.
