@@ -54,7 +54,6 @@ processRunner({
       runner.runCmd('packages/pkg1/src/components/component-1', [
         'sed',
         '-i',
-        '""',
         's/a\\?/x\\?/',
         'Component.tsx',
       ]);
@@ -62,7 +61,6 @@ processRunner({
       runner.runCmd('packages/pkg1/src/components/component-1', [
         'sed',
         '-i',
-        '""',
         's/x\\?/a\\?/',
         'Component.tsx',
       ]);
