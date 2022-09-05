@@ -28,6 +28,9 @@ class ProjectRunner {
       if (expectFail) {
         return;
       }
+      if (error.stdout) {
+        process.stderr.write(error.stdout);
+      }
       if (error.stderr) {
         process.stderr.write(error.stderr);
       }
