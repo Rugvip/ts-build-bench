@@ -18,7 +18,7 @@ class ProjectRunner {
       const cwd = resolvePath(this.project.dir, path);
       const projectParent = resolvePath(this.project.dir, '..');
       const targetPath = relativePath(projectParent, cwd);
-      console.log(`Running '${cmd.join(' ')}' in ${targetPath}/`);
+      console.log(`[${targetPath}] '${cmd.join(' ')}'`);
       const { stdout } = await execFile(cmd[0], cmd.slice(1), {
         shell: true,
         cwd,
@@ -37,12 +37,14 @@ class ProjectRunner {
     }
   }
 
-  async timeCmd({ path = '.', cmd, count = 1 }) {
+  async timeCmd({ dir, cmd, count = 1 }) {
     const timings = [];
     for (let i = 0; i < count; i++) {
       const start = Date.now();
-      await this.runCmd(path, cmd);
-      timings.push(Date.now() - start);
+      await this.runCmd('.', cmd);
+      const time = Date.now() - start;
+      console.log(`[${dir}] ${time}ms`);
+      timings.push(time);
     }
     return timings;
   }
@@ -84,7 +86,7 @@ class MatrixRunner {
         const start = Date.now();
         await func(r);
         const time = Date.now() - start;
-        console.log(`Run in ${dir} took ${time}ms`);
+        console.log(`[${dir}] ${time}ms`);
 
         if (cleanup) {
           const isLastRun = i === count - 1;
@@ -99,30 +101,16 @@ class MatrixRunner {
     return times;
   }
 
-  async timeCmd({ path = '.', cmd, count }) {
+  async timeCmd({ cmd, count }) {
     const times = {};
 
     for (const [index, r] of this.runners.entries()) {
       const dir = this.dirs[index];
-      const timings = await r.timeCmd({ path, cmd, count });
-      console.log(
-        `Time [${dir}/${path}] ${cmd.join(' ')} = ${timingsSummary(timings)}`
-      );
-      times[dir] = timings;
+      times[dir] = await r.timeCmd({dir, cmd, count});
     }
 
     return times;
   }
-}
-
-function timingsSummary(timings) {
-  const sum = (ns) => ns.reduce((sum, n) => sum + n, 0);
-
-  const avg = sum(timings) / timings.length;
-  const stdev = Math.sqrt(
-    sum(timings.map((ms) => (avg - ms) * (avg - ms))) / timings.length
-  );
-  return `avg=${avg.toFixed(0)}ms stdev=${stdev.toFixed(0)}`;
 }
 
 async function processRunner({ matrix, prepare, benchmark }) {

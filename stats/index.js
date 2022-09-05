@@ -14,7 +14,7 @@ function printTimingSummary(folderTimings) {
       console.log(
         `${prefix}${key.padEnd(size)} ${
           diff.avg < 0.9 ? '<' : diff.avg > 1.1 ? '>' : '~'
-        } ${fix(diff.avg, 3)}`
+        } ${fix(diff.avg, 3)}ms`
       );
     }
   };
@@ -22,7 +22,7 @@ function printTimingSummary(folderTimings) {
   for (const [dimIndex, slice] of sliceStats.entries()) {
     console.log(`Dimension ${dimIndex} diff vs ${slice.base.name}`);
     for (const part of slice.parts) {
-      console.log(`  ${part.name} avg=${fix(part.total.avg, 3)}`);
+      console.log(`  ${part.name} avg=${fix(part.total.avg, 3)}ms`);
       printDimensions(part.dimensions, '    ');
     }
     console.log('');
@@ -37,7 +37,7 @@ function printStats({ dimensions, timings }) {
   function printDim(prefix, [dim, ...rest], timings) {
     if (!dim) {
       const stats = computeStats(timings[0].ms);
-      console.log(`${prefix}> avg=${fix(stats.avg)} stdev=${fix(stats.stdev)}`);
+      console.log(`${prefix}> avg=${fix(stats.avg)}ms stdev=${fix(stats.stdev)}`);
       return;
     }
     for (const part of dim) {
@@ -52,7 +52,7 @@ function printStats({ dimensions, timings }) {
         console.log(
           `${prefix}${part.padEnd(lastSize)} | avg=${fix(
             stats.avg
-          )} stdev=${fix(stats.stdev)}`
+          )}ms stdev=${fix(stats.stdev)}`
         );
       } else {
         console.log(`${prefix}${part}`);

@@ -43,11 +43,11 @@ processRunner({
         }
       }
     );
-    console.log('*** FIRST LINT TIMES ***');
+    console.log('*** FIRST BUILD LINT TIMES  ***');
     printTimingSummary(timings1);
 
     const timings2 = await runner.timeCmd({ cmd: ['yarn', 'lint'], count });
-    console.log('*** SECOND LINT TIMES ***');
+    console.log('*** NO-CHANGES LINT TIMES ***');
     printTimingSummary(timings2);
 
     const timings4 = await runner.time(count, async (runner) => {
@@ -68,7 +68,7 @@ processRunner({
       ]);
       await runner.runCmd('.', ['yarn', 'lint']);
     });
-    console.log('*** CHANGED LINT TIMES ***');
+    console.log('*** SINGLE-CHANGE LINT TIMES ***');
     printTimingSummary(timings4);
   },
 });
