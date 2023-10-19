@@ -70,7 +70,7 @@ single top-level tsc incremental build:                  40s
 No real pattern here yet. Modify benchmarks and run them:
 
 ```bash
-./benchmark-<x>
+./benchmark-<name>
 ```
 
 If you give a number to benchmark, it will forward it as `count` to the benchmark function.
