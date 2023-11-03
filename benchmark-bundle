@@ -29,8 +29,12 @@ processRunner({
   }),
   prepare: async (runner) => {},
   benchmark: async (runner, count) => {
-    const timings = await runner.timeCmd({ cmd: ['yarn', 'bundle'], count });
-    console.log('*** BUNDLE TIMES ***');
-    printTimingSummary(timings);
+    const timings1 = await runner.timeCmd({ cmd: ['yarn', 'bundle'], count });
+    console.log('*** FIRST BUNDLE TIME ***');
+    printTimingSummary(timings1);
+
+    const timings2 = await runner.timeCmd({ cmd: ['yarn', 'bundle'], count });
+    console.log('*** INCREMENTAL BUNDLE TIMES ***');
+    printTimingSummary(timings2);
   },
 });
