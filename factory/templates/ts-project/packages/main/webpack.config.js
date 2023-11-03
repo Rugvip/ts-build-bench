@@ -34,6 +34,19 @@ if (MODE.startsWith('ts-fork')) {
       },
     },
   });
+} else if (MODE.startsWith('ts-project-references')) {
+  rules.push({
+    test: /\.tsx?$/,
+    exclude: /node_modules/,
+    loader: 'ts-loader',
+    options: {
+      projectReferences: true,
+      compilerOptions: {
+        module: 'CommonJS',
+        emitDeclarationOnly: false,
+      },
+    },
+  });
 } else if (MODE.startsWith('esbuild-transpile')) {
   rules.push({
     test: /\.tsx?$/,

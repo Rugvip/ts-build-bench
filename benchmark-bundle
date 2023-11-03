@@ -15,6 +15,12 @@ processRunner({
         bundleTs: {
           bundleMode: 'ts-transpile',
         },
+        bundleTsProjectReferences: {
+          types: 'dist/src/index.d.ts',
+          bundleMode: 'ts-project-references',
+          projectReferences: 'enabled',
+          buildMode: 'tsc',
+        },
         bundleSucrase: {
           bundleMode: 'sucrase-transpile',
         },
